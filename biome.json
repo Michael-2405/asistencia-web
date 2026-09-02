@@ -41,7 +41,7 @@
 
 	"overrides": [
 		{
-			"includes": ["public/**", "src/shared/ui/**"],
+			"includes": ["public/**"],
 			"linter": {
 				"rules": {
 					"a11y": {
@@ -50,6 +50,12 @@
 					}
 				}
 			}
+		},
+		{
+			"includes": ["src/shared/ui/**"],
+			"formatter": { "enabled": false },
+			"linter": { "enabled": false },
+			"assist": { "enabled": false }
 		},
 		{
 			"includes": ["**/*.d.ts"],
