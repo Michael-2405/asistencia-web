@@ -1,5 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { Ban, Lock } from "lucide-react";
+import { Ban, Lock, UserX } from "lucide-react";
 import type { ReactNode } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import type { AttendanceStatusCode, CalendarDay, StudentAttendanceRow } from "../types";
@@ -33,13 +33,21 @@ export function buildAttendanceColumns({
 			size: status === "today" ? 84 : 42,
 			header: () => <DayHeader date={date} status={status} />,
 			cell: ({ row }) => {
-				const studentId = row.original.studentId;
+				const student = row.original;
+				const isWithdrawnAtDate =
+					!student.active && student.withdrawalDate !== null && date >= student.withdrawalDate;
+
+				if (isWithdrawnAtDate) {
+					return (
+						<BlockedIcon icon={<UserX className="size-3.5" />} tooltip="Estudiante retirado" />
+					);
+				}
 
 				if (isEditableToday) {
 					return (
 						<StatusSelector
-							value={edits[studentId] ?? "P"}
-							onChange={(s) => onStatusChange(studentId, s)}
+							value={edits[student.studentId] ?? "P"}
+							onChange={(s) => onStatusChange(student.studentId, s)}
 						/>
 					);
 				}
@@ -47,7 +55,7 @@ export function buildAttendanceColumns({
 					return <BlockedIcon icon={<Ban className="size-3.5" />} tooltip="No laborable" />;
 				}
 
-				const saved = row.original.statusByDate[date] as AttendanceStatusCode | undefined;
+				const saved = student.statusByDate[date] as AttendanceStatusCode | undefined;
 				if (status === "past" || status === "future") {
 					if (saved) return <StatusBadge status={saved} />;
 					return (
@@ -114,17 +122,25 @@ export function buildAttendanceColumns({
 			header: "Estudiante",
 			size: 190,
 			cell: ({ row }) => {
-				const stats = computeStudentStats(row.original.statusByDate);
+				const student = row.original;
+				const stats = computeStudentStats(student.statusByDate);
 				return (
 					<div className="flex items-center gap-2">
-						<span>{row.original.fullName}</span>
-						{stats.hasConsecutiveAbsenceAlert && (
+						<span className={student.active ? "" : "text-[#9a9a9a] line-through"}>
+							{student.fullName}
+						</span>
+						{student.active && stats.hasConsecutiveAbsenceAlert && (
 							<Tooltip>
 								<TooltipTrigger
 									render={<span className="inline-block h-2 w-2 rounded-full bg-[#F9A825]" />}
 								/>
 								<TooltipContent>2+ ausencias consecutivas</TooltipContent>
 							</Tooltip>
+						)}
+						{!student.active && (
+							<span className="rounded bg-[#F0F0F0] px-1.5 py-0.5 text-[9px] font-bold text-[#8a8a8a]">
+								RETIRADO
+							</span>
 						)}
 					</div>
 				);

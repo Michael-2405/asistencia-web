@@ -1,6 +1,6 @@
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from "react";
-import { useCourse, useStudents } from "@/features/courses/hooks";
+import { useCourse } from "@/features/courses/hooks";
 import { Button } from "@/shared/ui/button";
 import { useMonthlyAttendance, useSaveDailyAttendance } from "../hooks";
 import type { AttendanceStatusCode } from "../types";
@@ -25,20 +25,8 @@ export function AttendanceGrid({
 	onMonthChange,
 }: AttendanceGridProps) {
 	const todayIso = getTodayIso();
-	const { data: students } = useStudents(courseId);
-	const activeStudents = useMemo(
-		() =>
-			(students ?? [])
-				.filter((s) => s.active)
-				.map((s) => ({
-					id: s.id,
-					rollNumber: s.orderNumber,
-					fullName: `${s.firstLastname}, ${s.firstName}`,
-				})),
-		[students],
-	);
-
-	const { data, isLoading } = useMonthlyAttendance(courseId, year, month, activeStudents);
+	const course = useCourse(courseId);
+	const { data, isLoading } = useMonthlyAttendance(courseId, year, month);
 	const saveMutation = useSaveDailyAttendance(courseId, year, month);
 	const [markDayOpen, setMarkDayOpen] = useState(false);
 	const [edits, setEdits] = useState<Record<string, AttendanceStatusCode>>({});
@@ -70,19 +58,21 @@ export function AttendanceGrid({
 
 	const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel() });
 
-	const course = useCourse(courseId);
-	const courseLabel = course
-		? `${course.grade} Grado — Sección ${course.section}${course.isHomeroom ? "" : ` · ${course.subjectName ?? ""}`}`
-		: "Cargando…";
-	const workingDaysCount = calendarDays.filter((d) => !d.nonInstructional).length;
-
 	async function handleSave() {
-		const records = rows.map((r) => ({
+		const eligibleStudents = rows.filter(
+			(r) => r.active || !r.withdrawalDate || r.withdrawalDate > todayIso,
+		);
+		const records = eligibleStudents.map((r) => ({
 			studentId: r.studentId,
 			status: edits[r.studentId] ?? ("P" as AttendanceStatusCode),
 		}));
 		await saveMutation.mutateAsync({ date: todayIso, records });
 	}
+
+	const courseLabel = course
+		? `${course.grade} Grado — Sección ${course.section}${course.isHomeroom ? "" : ` · ${course.subjectName ?? ""}`}`
+		: "Cargando…";
+	const workingDaysCount = calendarDays.filter((d) => !d.nonInstructional).length;
 
 	if (isLoading) return <p className="p-6 text-muted-foreground">Cargando…</p>;
 
@@ -96,6 +86,7 @@ export function AttendanceGrid({
 				selectedYear={year}
 				selectedMonth={month}
 			/>
+
 			<div className="flex items-center justify-between border-b border-[#E0E0E0] bg-white px-6 py-4">
 				<div className="flex items-center gap-3">
 					{isTodayEditable && !isTodaySubmitted && (
