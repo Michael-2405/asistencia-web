@@ -49,3 +49,18 @@ export async function httpPost<T>(path: string, body: unknown): Promise<T> {
 	});
 	return parseResponse<T>(res);
 }
+
+export async function httpPatch<T>(path: string, body: unknown): Promise<T> {
+	const res = await fetch(`${BASE_URL}${path}`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		credentials: "include",
+		body: JSON.stringify(body),
+	});
+	return parseResponse<T>(res);
+}
+
+export async function httpDelete<T>(path: string): Promise<T> {
+	const res = await fetch(`${BASE_URL}${path}`, { method: "DELETE", credentials: "include" });
+	return parseResponse<T>(res);
+}

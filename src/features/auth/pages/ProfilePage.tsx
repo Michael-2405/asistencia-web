@@ -2,16 +2,21 @@ import { useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { SessionsList } from "../components/SessionsList";
 import { StatusBanner } from "../components/StatusBanner";
+import { SuspendAccountDialog } from "../components/SuspendAccountDialog";
 import { TwoFactorSetup } from "../components/TwoFactorSetup";
+import { useMyProfile } from "../hooks";
 import { authClient, useSession } from "../lib/auth-client";
 
 export function ProfilePage() {
 	const { data: session, refetch } = useSession();
+	const { data: profile } = useMyProfile();
 	const [changeEmailOpen, setChangeEmailOpen] = useState(false);
 	const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 	const [setupOpen, setSetupOpen] = useState(false);
 	const [disableOpen, setDisableOpen] = useState(false);
+	const [suspendOpen, setSuspendOpen] = useState(false);
 
 	if (!session) return null;
 
@@ -21,12 +26,13 @@ export function ProfilePage() {
 
 	return (
 		<div className="mx-auto max-w-3xl p-8">
-			<h1 className="text-xl font-bold text-[#1a1a1a]">Mi perfil</h1>
+			<h1 className="text-xl font-bold text-[#1a1a1a]">{profile?.name ?? "Mi perfil"}</h1>
 
 			<Tabs defaultValue="account" className="mt-6">
 				<TabsList>
 					<TabsTrigger value="account">Cuenta</TabsTrigger>
 					<TabsTrigger value="security">Seguridad</TabsTrigger>
+					<TabsTrigger value="danger">Zona de peligro</TabsTrigger>
 				</TabsList>
 
 				<TabsContent value="account" className="mt-4">
@@ -88,6 +94,26 @@ export function ProfilePage() {
 							</Button>
 						)}
 					</div>
+					<div className="mt-6">
+						<div className="text-[13px] font-bold text-[#1a1a1a]">Últimos accesos</div>
+						<SessionsList />
+					</div>
+				</TabsContent>
+
+				<TabsContent value="danger" className="mt-4">
+					<div className="rounded-lg border border-[#f2b3b3] bg-[#fdeeee] p-6">
+						<div className="text-[13px] font-bold text-[#C62828]">Suspender cuenta</div>
+						<p className="mt-1.5 text-xs font-medium leading-relaxed text-[#8a4a4a]">
+							Suspende temporalmente tu cuenta. Tendrás 30 días para reactivarla antes de que se
+							elimine permanentemente.
+						</p>
+						<Button
+							className="mt-3.5 bg-[#C62828] hover:bg-[#a92020]"
+							onClick={() => setSuspendOpen(true)}
+						>
+							Suspender mi cuenta
+						</Button>
+					</div>
 				</TabsContent>
 			</Tabs>
 
@@ -101,6 +127,7 @@ export function ProfilePage() {
 					refetch();
 				}}
 			/>
+			<SuspendAccountDialog open={suspendOpen} onOpenChange={setSuspendOpen} />
 
 			<Dialog open={setupOpen} onOpenChange={setSetupOpen}>
 				<DialogContent>

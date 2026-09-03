@@ -86,6 +86,21 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AttendanceGrid } from "@/features/attendance/components/AttendanceGrid";
 import { RequireAuth } from "@/features/auth/components/RequireAuth";
 
+const CoursesListPage = lazy(() =>
+	import("@/features/courses/pages/CoursesListPage").then((m) => ({ default: m.CoursesListPage })),
+);
+const StudentsListPage = lazy(() =>
+	import("@/features/courses/pages/StudentsListPage").then((m) => ({
+		default: m.StudentsListPage,
+	})),
+);
+
+const AccountSuspendedPage = lazy(() =>
+	import("@/features/auth/pages/AccountSuspendedPage").then((m) => ({
+		default: m.AccountSuspendedPage,
+	})),
+);
+
 const LoginPage = lazy(() =>
 	import("@/features/auth/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
 );
@@ -121,6 +136,14 @@ function App() {
 					<Route path="/forgot-password" element={<ForgotPasswordPage />} />
 					<Route path="/reset-password" element={<ResetPasswordPage />} />
 					<Route
+						path="/account-suspended"
+						element={
+							<RequireAuth checkSuspension={false}>
+								<AccountSuspendedPage />
+							</RequireAuth>
+						}
+					/>
+					<Route
 						path="/profile"
 						element={
 							<RequireAuth>
@@ -135,6 +158,22 @@ function App() {
 								<main className="mx-auto max-w-[1600px] p-6">
 									<AttendanceGrid sectionId="..." schoolYearId="..." year={2026} month={8} />
 								</main>
+							</RequireAuth>
+						}
+					/>
+					<Route
+						path="/courses"
+						element={
+							<RequireAuth>
+								<CoursesListPage />
+							</RequireAuth>
+						}
+					/>
+					<Route
+						path="/courses/:courseId/students"
+						element={
+							<RequireAuth>
+								<StudentsListPage />
 							</RequireAuth>
 						}
 					/>

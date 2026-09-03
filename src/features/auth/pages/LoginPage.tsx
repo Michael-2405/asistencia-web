@@ -12,7 +12,6 @@ const loginSchema = z.object({
 	email: z.string().email("Correo inválido"),
 	password: z.string().min(1, "Requerido"),
 });
-const totpSchema = z.object({ code: z.string().length(6, "El código debe tener 6 dígitos") });
 
 const FIELD_CLASS =
 	"rounded-lg border border-[#E0E0E0] px-3 py-2.5 text-sm text-[#1a1a1a] outline-none focus:border-[#003087] w-full box-border";
@@ -21,15 +20,14 @@ export function LoginPage() {
 	const navigate = useNavigate();
 	const [showPassword, setShowPassword] = useState(false);
 	const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+	const [useBackupCode, setUseBackupCode] = useState(false);
+	const [code, setCode] = useState("");
 	const [error, setError] = useState<string | null>(null);
+	const [verifying, setVerifying] = useState(false);
 
 	const loginForm = useForm<z.infer<typeof loginSchema>>({
 		resolver: zodResolver(loginSchema),
 		defaultValues: { email: "", password: "" },
-	});
-	const totpForm = useForm<z.infer<typeof totpSchema>>({
-		resolver: zodResolver(totpSchema),
-		defaultValues: { code: "" },
 	});
 
 	async function onLoginSubmit(values: z.infer<typeof loginSchema>) {
@@ -46,17 +44,31 @@ export function LoginPage() {
 			return;
 		}
 
-		navigate("/dashboard");
+		navigate("/courses");
 	}
 
-	async function onTotpSubmit(values: z.infer<typeof totpSchema>) {
+	async function onVerify() {
 		setError(null);
-		const { error: verifyError } = await authClient.twoFactor.verifyTotp({ code: values.code });
-		if (verifyError) {
-			setError("Código inválido");
+		setVerifying(true);
+
+		const result = useBackupCode
+			? await authClient.twoFactor.verifyBackupCode({ code })
+			: await authClient.twoFactor.verifyTotp({ code });
+
+		setVerifying(false);
+
+		if (result.error) {
+			setError(useBackupCode ? "Código de recuperación inválido" : "Código inválido");
 			return;
 		}
-		navigate("/dashboard");
+
+		navigate("/courses");
+	}
+
+	function toggleBackupCode() {
+		setUseBackupCode((v) => !v);
+		setCode("");
+		setError(null);
 	}
 
 	return (
@@ -69,7 +81,9 @@ export function LoginPage() {
 			</h2>
 			<p className="mt-1.5 text-[13px] font-medium text-[#6b6b6b]">
 				{requiresTwoFactor
-					? "Ingresa el código de tu app de autenticación"
+					? useBackupCode
+						? "Ingresa uno de tus códigos de recuperación"
+						: "Ingresa el código de tu app de autenticación"
 					: "Ingresa con tu correo institucional"}
 			</p>
 
@@ -80,17 +94,30 @@ export function LoginPage() {
 			)}
 
 			{requiresTwoFactor ? (
-				<form onSubmit={totpForm.handleSubmit(onTotpSubmit)} className="mt-6 flex flex-col gap-4">
+				<div className="mt-6 flex flex-col gap-4">
 					<input
-						{...totpForm.register("code")}
-						maxLength={6}
-						placeholder="000000"
-						className="w-full rounded-lg border-[1.5px] border-[#E0E0E0] py-3.5 text-center font-bold text-2xl tracking-[8px] outline-none focus:border-[#003087]"
+						value={code}
+						onChange={(e) => setCode(e.target.value)}
+						placeholder={useBackupCode ? "XXXX-XXXX" : "000000"}
+						maxLength={useBackupCode ? 9 : 6}
+						className="w-full rounded-lg border-[1.5px] border-[#E0E0E0] py-3.5 text-center font-bold text-2xl tracking-[6px] outline-none focus:border-[#003087]"
 					/>
-					<Button type="submit" className="w-full bg-[#003087] hover:bg-[#002468]">
-						Verificar
+					<Button
+						type="button"
+						onClick={onVerify}
+						disabled={!code || verifying}
+						className="w-full bg-[#003087] hover:bg-[#002468]"
+					>
+						{verifying ? "Verificando…" : "Verificar"}
 					</Button>
-				</form>
+					<button
+						type="button"
+						onClick={toggleBackupCode}
+						className="text-center text-xs font-semibold text-[#003087]"
+					>
+						{useBackupCode ? "Usar código de la app" : "Usar código de recuperación"}
+					</button>
+				</div>
 			) : (
 				<form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="mt-6 flex flex-col gap-4">
 					<label className="flex flex-col gap-1.5">
