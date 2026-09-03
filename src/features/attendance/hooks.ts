@@ -2,22 +2,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as api from "./api";
 import type { AttendanceRecordInput } from "./types";
 
-interface StudentRef {
-	id: string;
-	rollNumber: number;
-	fullName: string;
-}
+// interface StudentRef {
+// 	id: string;
+// 	rollNumber: number;
+// 	fullName: string;
+// }
 
-export function useMonthlyAttendance(
-	courseId: string,
-	year: number,
-	month: number,
-	students: StudentRef[],
-) {
+export function useMonthlyAttendance(courseId: string, year: number, month: number) {
 	return useQuery({
 		queryKey: ["course-attendance", courseId, year, month],
-		queryFn: () => api.fetchMonthlyAttendance(courseId, year, month, students),
-		enabled: students.length > 0,
+		queryFn: () => api.fetchMonthlyAttendance(courseId, year, month),
 	});
 }
 

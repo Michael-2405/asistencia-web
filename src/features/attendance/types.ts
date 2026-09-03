@@ -9,6 +9,8 @@ export interface StudentAttendanceRow {
 	studentId: string;
 	rollNumber: number;
 	fullName: string;
+	active: boolean;
+	withdrawalDate: string | null;
 	statusByDate: Record<string, AttendanceStatusCode>;
 }
 
