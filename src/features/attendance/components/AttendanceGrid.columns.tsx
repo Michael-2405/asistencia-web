@@ -1,8 +1,9 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { Ban, Lock } from "lucide-react";
+import type { ReactNode } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import type { AttendanceStatusCode, CalendarDay, StudentAttendanceRow } from "../types";
-import { computeStudentTotals, getDayStatus } from "../utils";
+import { computeStudentStats, getDayStatus } from "../utils";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
 
@@ -12,7 +13,7 @@ interface BuildColumnsParams {
 	calendarDays: CalendarDay[];
 	todayIso: string;
 	edits: Record<string, AttendanceStatusCode>;
-	onStatusChange: (enrollmentId: string, status: AttendanceStatusCode) => void;
+	onStatusChange: (studentId: string, status: AttendanceStatusCode) => void;
 	isTodaySubmitted: boolean;
 }
 
@@ -29,84 +30,116 @@ export function buildAttendanceColumns({
 
 		return columnHelper.display({
 			id: date,
-			size: status === "today" ? 88 : 56,
+			size: status === "today" ? 84 : 42,
 			header: () => <DayHeader date={date} status={status} />,
 			cell: ({ row }) => {
-				const enrollmentId = row.original.enrollmentId;
+				const studentId = row.original.studentId;
 
 				if (isEditableToday) {
 					return (
 						<StatusSelector
-							value={edits[enrollmentId] ?? "P"}
-							onChange={(newStatus) => onStatusChange(enrollmentId, newStatus)}
+							value={edits[studentId] ?? "P"}
+							onChange={(s) => onStatusChange(studentId, s)}
 						/>
 					);
 				}
-
 				if (status === "nonInstructional") {
-					return <BlockedIndicator icon={<Ban className="size-3.5" />} tooltip="No laborable" />;
+					return <BlockedIcon icon={<Ban className="size-3.5" />} tooltip="No laborable" />;
 				}
 
+				const saved = row.original.statusByDate[date] as AttendanceStatusCode | undefined;
 				if (status === "past" || status === "future") {
-					const savedStatus = row.original.statusByDate[date] as AttendanceStatusCode | undefined;
-					if (savedStatus) return <StatusBadge status={savedStatus} />;
-
+					if (saved) return <StatusBadge status={saved} />;
 					return (
-						<BlockedIndicator
+						<BlockedIcon
 							icon={<Lock className="size-3.5" />}
 							tooltip={status === "past" ? "Fecha pasada" : "Fecha futura"}
 						/>
 					);
 				}
-
-				const savedStatus = row.original.statusByDate[date] as AttendanceStatusCode | undefined;
-				return <StatusBadge status={savedStatus ?? null} />;
+				return <StatusBadge status={saved ?? null} />;
 			},
 		});
 	});
 
-	const totalsColumns = [
+	const summaryColumns = [
 		columnHelper.display({
-			id: "totalPresent",
-			size: 56,
-			header: () => <TotalHeader label="Pres." colorClass="bg-green-600" />,
-			cell: ({ row }) => computeStudentTotals(row.original.statusByDate).present,
+			id: "P",
+			size: 40,
+			header: () => <SummaryHeader label="P" bg="bg-[#166534]" />,
+			cell: ({ row }) => computeStudentStats(row.original.statusByDate).present,
 		}),
 		columnHelper.display({
-			id: "totalAbsent",
-			size: 56,
-			header: () => <TotalHeader label="Aus." colorClass="bg-red-600" />,
-			cell: ({ row }) => computeStudentTotals(row.original.statusByDate).absent,
+			id: "T",
+			size: 40,
+			header: () => <SummaryHeader label="T" bg="bg-[#92400e]" />,
+			cell: ({ row }) => computeStudentStats(row.original.statusByDate).late,
 		}),
 		columnHelper.display({
-			id: "totalLate",
-			size: 56,
-			header: () => <TotalHeader label="Tar." colorClass="bg-amber-600" />,
-			cell: ({ row }) => computeStudentTotals(row.original.statusByDate).late,
+			id: "A",
+			size: 40,
+			header: () => <SummaryHeader label="A" bg="bg-[#991b1b]" />,
+			cell: ({ row }) => computeStudentStats(row.original.statusByDate).absent,
 		}),
 		columnHelper.display({
-			id: "totalExcused",
-			size: 56,
-			header: () => <TotalHeader label="Exc." colorClass="bg-blue-600" />,
-			cell: ({ row }) => computeStudentTotals(row.original.statusByDate).excused,
+			id: "E",
+			size: 40,
+			header: () => <SummaryHeader label="E" bg="bg-[#1e40af]" />,
+			cell: ({ row }) => computeStudentStats(row.original.statusByDate).excused,
+		}),
+		columnHelper.display({
+			id: "pct",
+			size: 64,
+			header: () => <SummaryHeader label="% Asist." bg="bg-[#00123d]" />,
+			cell: ({ row }) => {
+				const stats = computeStudentStats(row.original.statusByDate);
+				const color =
+					stats.percentage < 80
+						? "text-[#C62828] bg-[#fdeeee]"
+						: stats.percentage < 90
+							? "text-[#a06a00] bg-[#fdf6e6]"
+							: "text-[#2E7D32] bg-[#eef6ee]";
+				return (
+					<span className={`inline-block rounded px-1.5 py-0.5 text-xs font-extrabold ${color}`}>
+						{stats.percentage}%
+					</span>
+				);
+			},
 		}),
 	];
 
 	return [
-		columnHelper.accessor("rollNumber", { header: "#", size: 40 }),
-		columnHelper.accessor("fullName", { header: "Estudiante", size: 180 }),
+		columnHelper.accessor("rollNumber", { header: "Nº", size: 34 }),
+		columnHelper.accessor("fullName", {
+			header: "Estudiante",
+			size: 190,
+			cell: ({ row }) => {
+				const stats = computeStudentStats(row.original.statusByDate);
+				return (
+					<div className="flex items-center gap-2">
+						<span>{row.original.fullName}</span>
+						{stats.hasConsecutiveAbsenceAlert && (
+							<Tooltip>
+								<TooltipTrigger
+									render={<span className="inline-block h-2 w-2 rounded-full bg-[#F9A825]" />}
+								/>
+								<TooltipContent>2+ ausencias consecutivas</TooltipContent>
+							</Tooltip>
+						)}
+					</div>
+				);
+			},
+		}),
 		...dayColumns,
-		...totalsColumns,
+		...summaryColumns,
 	];
 }
 
-function BlockedIndicator({ icon, tooltip }: { icon: React.ReactNode; tooltip: string }) {
+function BlockedIcon({ icon, tooltip }: { icon: ReactNode; tooltip: string }) {
 	return (
 		<Tooltip>
 			<TooltipTrigger
-				render={
-					<span className="flex items-center justify-center text-muted-foreground">{icon}</span>
-				}
+				render={<span className="flex items-center justify-center text-[#b0b0b0]">{icon}</span>}
 			/>
 			<TooltipContent>{tooltip}</TooltipContent>
 		</Tooltip>
@@ -114,25 +147,23 @@ function BlockedIndicator({ icon, tooltip }: { icon: React.ReactNode; tooltip: s
 }
 
 function DayHeader({ date, status }: { date: string; status: ReturnType<typeof getDayStatus> }) {
-	const parsedDate = new Date(`${date}T00:00:00`);
-	const weekday = parsedDate.toLocaleDateString("es-DO", { weekday: "short" });
-	const dayNumber = parsedDate.getDate();
-
-	const headerClass =
+	const d = new Date(`${date}T00:00:00`);
+	const dow = d.toLocaleDateString("es-DO", { weekday: "short" });
+	const num = d.getDate();
+	const cls =
 		status === "today"
-			? "bg-green-600 text-white"
+			? "bg-[#0288D1] text-white"
 			: status === "nonInstructional"
-				? "bg-slate-200 text-slate-500 line-through"
-				: "";
-
+				? "bg-[#94a3b8] text-white line-through"
+				: "bg-[#003087] text-white";
 	return (
-		<div className={`rounded px-1 py-0.5 text-center ${headerClass}`}>
-			<div className="text-[10px] uppercase leading-none">{weekday}</div>
-			<div className="text-sm font-semibold leading-tight">{dayNumber}</div>
+		<div className={`rounded px-1 py-0.5 text-center ${cls}`}>
+			<div className="text-[9px] uppercase leading-none">{dow}</div>
+			<div className="text-[13px] font-bold leading-tight">{num}</div>
 		</div>
 	);
 }
 
-function TotalHeader({ label, colorClass }: { label: string; colorClass: string }) {
-	return <div className={`rounded px-1 py-0.5 text-center text-white ${colorClass}`}>{label}</div>;
+function SummaryHeader({ label, bg }: { label: string; bg: string }) {
+	return <div className={`rounded px-1 py-0.5 text-center text-white ${bg}`}>{label}</div>;
 }

@@ -11,9 +11,16 @@ interface CourseCardProps {
 	onEdit: () => void;
 	onDelete: () => void;
 	onViewStudents: () => void;
+	onTakeAttendance: () => void;
 }
 
-export function CourseCard({ course, onEdit, onDelete, onViewStudents }: CourseCardProps) {
+export function CourseCard({
+	course,
+	onEdit,
+	onDelete,
+	onViewStudents,
+	onTakeAttendance,
+}: CourseCardProps) {
 	return (
 		<div className="flex flex-col gap-3 rounded-xl border border-[#E0E0E0] bg-white p-5">
 			<div className="flex items-start justify-between">
@@ -47,9 +54,8 @@ export function CourseCard({ course, onEdit, onDelete, onViewStudents }: CourseC
 			<div className="mt-0.5 flex gap-2">
 				<button
 					type="button"
-					disabled
-					title="Próximamente — módulo de asistencia en construcción"
-					className="flex-1 cursor-not-allowed rounded-lg bg-[#a9b8d9] py-2.5 text-xs font-bold text-white"
+					onClick={onTakeAttendance}
+					className="flex-1 rounded-lg bg-[#003087] py-2.5 text-xs font-bold text-white hover:bg-[#002468]"
 				>
 					Pasar lista
 				</button>

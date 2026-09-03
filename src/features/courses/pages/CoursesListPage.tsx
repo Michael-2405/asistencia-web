@@ -79,6 +79,7 @@ export function CoursesListPage() {
 								onEdit={() => openEdit(c)}
 								onDelete={() => setDeletingCourse(c)}
 								onViewStudents={() => navigate(`/courses/${c.id}/students`)}
+								onTakeAttendance={() => navigate(`/courses/${c.id}/attendance`)}
 							/>
 						))}
 					</div>

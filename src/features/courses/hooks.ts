@@ -94,3 +94,8 @@ export function useDeleteCourse() {
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["courses"] }),
 	});
 }
+
+export function useCourse(courseId: string) {
+	const { data: courses } = useAllCourses();
+	return courses?.find((c) => c.id === courseId);
+}

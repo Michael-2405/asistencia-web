@@ -1,43 +1,78 @@
-import { httpGet, httpPost } from "../../shared/lib/http";
-import { createLogger } from "../../shared/lib/logger";
-import type { DailyAttendanceRowDto, MonthlyAttendanceResponseDto } from "./dto";
-import { toDailyAttendanceRow, toMonthlyAttendance } from "./mappers";
-import type { AttendanceRecordInput } from "./types";
+import type {
+	AttendanceRecordInput,
+	CalendarDay,
+	MonthlyAttendance,
+	StudentAttendanceRow,
+} from "./types";
 
-const logger = createLogger("AttendanceApi");
-
-export async function fetchMonthlyAttendance(sectionId: string, year: number, month: number) {
-	logger.debug("Fetching monthly attendance", { sectionId, year, month });
-	const dto = await httpGet<MonthlyAttendanceResponseDto>(
-		`/secciones/${sectionId}/asistencia?anio=${year}&mes=${month}`,
-	);
-	return toMonthlyAttendance(dto);
+interface MockStore {
+	records: Record<string, Record<string, AttendanceRecordInput["status"]>>;
+	nonInstructionalDays: Record<string, Set<string>>;
 }
 
-export async function fetchDailyAttendance(sectionId: string, date: string) {
-	logger.debug("Fetching daily attendance", { sectionId, date });
-	const dtos = await httpGet<DailyAttendanceRowDto[]>(
-		`/secciones/${sectionId}/asistencia/dia?fecha=${date}`,
-	);
-	return dtos.map(toDailyAttendanceRow);
+const store: MockStore = { records: {}, nonInstructionalDays: {} };
+
+function delay<T>(value: T, ms = 250): Promise<T> {
+	return new Promise((resolve) => setTimeout(() => resolve(value), ms));
+}
+
+function generateCalendarDays(year: number, month: number, courseId: string): CalendarDay[] {
+	const days: CalendarDay[] = [];
+	const daysInMonth = new Date(year, month, 0).getDate();
+	const nonInstructional = store.nonInstructionalDays[courseId] ?? new Set<string>();
+
+	for (let d = 1; d <= daysInMonth; d++) {
+		const date = new Date(year, month - 1, d);
+		const dow = date.getDay();
+		if (dow === 0 || dow === 6) continue;
+		const iso = date.toISOString().split("T")[0];
+		days.push({ date: iso, nonInstructional: nonInstructional.has(iso) });
+	}
+	return days;
+}
+
+interface StudentRef {
+	id: string;
+	rollNumber: number;
+	fullName: string;
+}
+
+export async function fetchMonthlyAttendance(
+	courseId: string,
+	year: number,
+	month: number,
+	students: StudentRef[],
+): Promise<MonthlyAttendance> {
+	const calendarDays = generateCalendarDays(year, month, courseId);
+
+	const rows: StudentAttendanceRow[] = students.map((s) => {
+		const statusByDate: StudentAttendanceRow["statusByDate"] = {};
+		for (const day of calendarDays) {
+			const dayRecord = store.records[`${courseId}-${day.date}`];
+			const status = dayRecord?.[s.id];
+			if (status) statusByDate[day.date] = status;
+		}
+		return { studentId: s.id, rollNumber: s.rollNumber, fullName: s.fullName, statusByDate };
+	});
+
+	return delay({ calendarDays, rows });
 }
 
 export async function saveDailyAttendance(
-	sectionId: string,
+	courseId: string,
 	date: string,
 	records: AttendanceRecordInput[],
 ) {
-	logger.info("Saving daily attendance", { sectionId, date, count: records.length });
-	return httpPost<{ ok: boolean; guardados: number }>(`/secciones/${sectionId}/asistencia/dia`, {
-		fecha: date,
-		registros: records.map((r) => ({ matriculaId: r.enrollmentId, estado: r.status })),
-	});
+	const key = `${courseId}-${date}`;
+	if (store.records[key]) {
+		throw new Error("La asistencia de este día ya fue registrada");
+	}
+	store.records[key] = Object.fromEntries(records.map((r) => [r.studentId, r.status]));
+	return delay({ ok: true });
 }
 
-export async function markNonInstructionalDay(schoolYearId: string, date: string, reason: string) {
-	logger.info("Marking non-instructional day", { schoolYearId, date, reason });
-	return httpPost<{ ok: boolean }>(`/anios-escolares/${schoolYearId}/dias-no-lectivos`, {
-		fecha: date,
-		motivo: reason,
-	});
+export async function markNonInstructionalDay(courseId: string, date: string, _reason: string) {
+	if (!store.nonInstructionalDays[courseId]) store.nonInstructionalDays[courseId] = new Set();
+	store.nonInstructionalDays[courseId].add(date);
+	return delay({ ok: true });
 }
