@@ -1,101 +1,63 @@
 import { useState } from "react";
-import { useMarkNonInstructionalDay } from "@/features/attendance/hooks";
 import { Button } from "@/shared/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
+import { useMarkNonInstructionalDay } from "../hooks";
 
-interface MarkNonInstructionalDayDialogProps {
-	sectionId: string;
-	schoolYearId: string;
+interface Props {
+	courseId: string;
 	year: number;
 	month: number;
+	open: boolean;
+	onOpenChange: (v: boolean) => void;
 }
 
 export function MarkNonInstructionalDayDialog({
-	sectionId,
-	schoolYearId,
+	courseId,
 	year,
 	month,
-}: MarkNonInstructionalDayDialogProps) {
-	const [open, setOpen] = useState(false);
+	open,
+	onOpenChange,
+}: Props) {
+	const mutation = useMarkNonInstructionalDay(courseId, year, month);
 	const [date, setDate] = useState("");
 	const [reason, setReason] = useState("");
 
-	const mutation = useMarkNonInstructionalDay(sectionId, year, month);
-
-	function handleSubmit() {
+	async function submit() {
 		if (!date) return;
-
-		mutation.mutate(
-			{ schoolYearId, date, reason },
-			{
-				onSuccess: () => {
-					setOpen(false);
-					setDate("");
-					setReason("");
-				},
-			},
-		);
+		await mutation.mutateAsync({ date, reason });
+		setDate("");
+		setReason("");
+		onOpenChange(false);
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger render={<Button variant="outline">Marcar día no laborable</Button>} />
+		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Marcar día no laborable</DialogTitle>
-					<DialogDescription>
-						Registra un día en que no habrá clases por una razón fuera del calendario oficial
-						(tormenta, jornada de capacitación, etc.).
-					</DialogDescription>
 				</DialogHeader>
-
 				<div className="space-y-3">
-					<div className="space-y-1">
-						<Label htmlFor="non-instructional-date">Fecha</Label>
-						<Input
-							id="non-instructional-date"
-							type="date"
-							value={date}
-							onChange={(e) => setDate(e.target.value)}
-						/>
-					</div>
-
-					<div className="space-y-1">
-						<Label htmlFor="non-instructional-reason">Razón</Label>
-						<Textarea
-							id="non-instructional-reason"
-							placeholder="Ej: Tormenta, jornada de capacitación..."
-							value={reason}
-							onChange={(e) => setReason(e.target.value)}
-						/>
-					</div>
-
-					{mutation.isError && (
-						<p className="text-sm text-destructive">
-							{mutation.error instanceof Error ? mutation.error.message : "Ocurrió un error"}
-						</p>
-					)}
+					<input
+						type="date"
+						value={date}
+						onChange={(e) => setDate(e.target.value)}
+						className="w-full rounded-lg border border-[#E0E0E0] px-3 py-2.5 text-sm outline-none focus:border-[#003087]"
+					/>
+					<textarea
+						value={reason}
+						onChange={(e) => setReason(e.target.value)}
+						placeholder="Ej: Tormenta, jornada de capacitación..."
+						rows={3}
+						className="w-full rounded-lg border border-[#E0E0E0] px-3 py-2.5 text-sm outline-none focus:border-[#003087]"
+					/>
+					<Button
+						className="w-full bg-[#003087] hover:bg-[#002468]"
+						onClick={submit}
+						disabled={!date || mutation.isPending}
+					>
+						Guardar
+					</Button>
 				</div>
-
-				<DialogFooter>
-					<Button variant="ghost" onClick={() => setOpen(false)}>
-						Cancelar
-					</Button>
-					<Button onClick={handleSubmit} disabled={!date || mutation.isPending}>
-						{mutation.isPending ? "Guardando…" : "Guardar"}
-					</Button>
-				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	);
