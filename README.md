@@ -1,34 +1,37 @@
-# Asistencia Web
+# Cuaderno Digital — Web
 
-Aplicación web para digitalizar el registro de control de asistencia y puntualidad de MINERD (Ministerio de Educación de la República Dominicana). Permite a un docente visualizar la asistencia mensual de una sección, tomar asistencia del día actual y marcar días no laborables fuera del calendario oficial.
+Frontend del sistema de control de asistencia y calificaciones para docentes, consumiendo la API de [`asistencia-api`](https://github.com/Michael-2405/asistencia-api).
 
 ## Stack técnico
 
 - **React 19** + **TypeScript**
 - **Vite** como bundler
+- **React Router** para enrutamiento
 - **TanStack Query** para estado de servidor (caché, mutaciones, invalidación)
-- **TanStack Table** para la grilla de asistencia
+- **TanStack Table** para grillas de datos
+- **React Hook Form** + **Zod** para formularios
 - **Tailwind CSS v4** + **shadcn/ui** (Base UI) para componentes
 - **Biome** como linter y formatter
 
 ## Requisitos previos
 
 - Node.js 20+
-- La API de este proyecto corriendo localmente ([asistencia-api](../asistencia-api)) — este frontend no funciona sin ella.
+- La API de este proyecto corriendo localmente ([asistencia-api](https://github.com/Michael-2405/asistencia-api)) — este frontend no funciona sin ella.
 
 ## Configuración
 
 1. Instala las dependencias:
 
 ```bash
-   npm install
+npm install
 ```
 
-2. Copia el archivo de variables de entorno de ejemplo y ajusta según tu entorno:
+2. Copia el archivo de variables de entorno de ejemplo:
 
 ```bash
-   cp .env.example .env
+cp .env.example .env
 ```
+
 ```
 VITE_API_URL=http://localhost:3000
 ```
@@ -36,7 +39,7 @@ VITE_API_URL=http://localhost:3000
 3. Levanta el servidor de desarrollo:
 
 ```bash
-   npm run dev
+npm run dev
 ```
 
 ## Scripts disponibles
@@ -59,27 +62,22 @@ El código sigue una organización por **vertical slicing**: cada carpeta bajo `
 
 ```
 src/
-  features/
-    attendance/       # Ver y registrar asistencia de una sección
-    sections/          # Selección de curso/sección
-    school-year/        # Año escolar, calendario y navegación de meses
-  shared/
-    ui/                # Componentes de shadcn/ui
-    lib/                # HTTP client, logger
+features/
+auth/ # Registro, login, 2FA, recuperación de contraseña, perfil
+courses/ # Cursos y estudiantes
+attendance/ # Registro de asistencia
+shared/
+ui/ # Componentes de shadcn/ui
+lib/ # HTTP client, logger
 ```
 
+Cada feature sigue el mismo patrón interno: `types.ts` → `api.ts` → `hooks.ts` (TanStack Query) → `components/` → `pages/`.
 
-Cada feature sigue el mismo patrón interno:
+## Documentación adicional
 
-- `dto.ts` — formas crudas tal como las devuelve el backend (en español, sin traducir).
-- `types.ts` — modelo de dominio interno, en inglés.
-- `mappers.ts` — traduce entre `dto` y `types` (capa anti-corrupción).
-- `api.ts` — llamadas HTTP tipadas.
-- `hooks.ts` — hooks de TanStack Query, dueños del estado de servidor.
-- `components/` — componentes de presentación, sin lógica de datos propia.
+- `CONTEXT.md` — arquitectura completa, mapa de rutas, gotchas conocidos.
+- `TECH_DEBT.md` — deuda técnica y funcionalidad pendiente, priorizada.
 
 ## Estado del proyecto
 
-Proyecto en desarrollo activo. El backend (`asistencia-api`) actualmente vive en un repositorio separado y está siendo reestructurado antes de su primera versión pública.
-
-- La API de este proyecto corriendo localmente ([asistencia-api](https://github.com/tu-usuario/asistencia-api)) — este frontend no funciona sin ella.
+En desarrollo activo. Módulos completos: autenticación (registro, login, 2FA, recuperación de contraseña, perfil), cursos y estudiantes, registro de asistencia. Próximo bloque: gestión de calificaciones.
