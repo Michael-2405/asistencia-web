@@ -45,3 +45,4 @@
 ## 🟠 Pendiente de investigar (no resuelto)
 
 - **TOTP falla en el primer intento del login incluso con tiempo suficiente en el código** — el segundo intento inmediato sí funciona. Posible desfase de reloj servidor/dispositivo, o el `failed_verification_count`/`locked_until` del schema `two_factor` interfiriendo. Reproducido dos veces.
+- **Toast "Conexión restaurada" no se alcanza a ver al volver de offline** — la recarga automática (1.2s después) sí ocurre correctamente, pero el toast no llega a percibirse visualmente antes de que la página recargue. Posible carrera entre el montaje del `<Toaster />` y el timing del `setTimeout`.

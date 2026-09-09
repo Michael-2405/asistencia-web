@@ -5,17 +5,17 @@ const logger = createLogger("ErrorBoundary");
 
 interface Props {
 	children: ReactNode;
-	fallback?: ReactNode;
+	renderFallback?: (error: Error) => ReactNode;
 }
 interface State {
-	hasError: boolean;
+	error: Error | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-	state: State = { hasError: false };
+	state: State = { error: null };
 
-	static getDerivedStateFromError(): State {
-		return { hasError: true };
+	static getDerivedStateFromError(error: Error): State {
+		return { error };
 	}
 
 	componentDidCatch(error: Error, info: ErrorInfo) {
@@ -27,21 +27,21 @@ export class ErrorBoundary extends Component<Props, State> {
 	}
 
 	render() {
-		if (this.state.hasError) {
+		if (this.state.error) {
+			if (this.props.renderFallback) return this.props.renderFallback(this.state.error);
+
 			return (
-				this.props.fallback ?? (
-					<div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 p-6 text-center">
-						<h2 className="text-lg font-bold text-[#1a1a1a]">Algo salió mal</h2>
-						<p className="text-sm text-[#6b6b6b]">Intenta recargar la página.</p>
-						<button
-							type="button"
-							onClick={() => window.location.reload()}
-							className="rounded-lg bg-[#003087] px-4 py-2 text-sm text-white"
-						>
-							Recargar
-						</button>
-					</div>
-				)
+				<div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 p-6 text-center">
+					<h2 className="text-lg font-bold text-[#1a1a1a]">Algo salió mal</h2>
+					<p className="text-sm text-[#6b6b6b]">Intenta recargar la página.</p>
+					<button
+						type="button"
+						onClick={() => window.location.reload()}
+						className="rounded-lg bg-[#003087] px-4 py-2 text-sm text-white"
+					>
+						Recargar
+					</button>
+				</div>
 			);
 		}
 		return this.props.children;

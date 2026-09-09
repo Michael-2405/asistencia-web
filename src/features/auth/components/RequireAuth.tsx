@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
+import { UnauthenticatedPage } from "@/features/errors/pages/UnauthenticatedPage";
 import { useMyProfile } from "../hooks/useProfile";
 import { useSession } from "../lib/auth-client";
 
@@ -15,7 +16,7 @@ export function RequireAuth({ children, checkSuspension = true }: RequireAuthPro
 	);
 
 	if (isPending) return <p className="p-8 text-muted-foreground">Cargando…</p>;
-	if (!session) return <Navigate to="/login" replace />;
+	if (!session) return <UnauthenticatedPage />;
 
 	if (checkSuspension) {
 		if (profileLoading) return <p className="p-8 text-muted-foreground">Cargando…</p>;

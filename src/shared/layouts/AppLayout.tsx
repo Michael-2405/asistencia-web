@@ -1,8 +1,14 @@
 import { LayoutDashboard, LogOut, User } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useMyProfile } from "@/features/auth/hooks/useProfile";
 import { authClient } from "@/features/auth/lib/auth-client";
+import { OfflinePage } from "@/features/errors/pages/OfflinePage";
+import { ServerErrorPage } from "@/features/errors/pages/ServerErrorPage";
 import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
+import { OfflineBanner } from "@/shared/components/OfflineBanner";
+import { useOnlineStatus } from "@/shared/hooks/useOnlineStatus";
 import { createLogger } from "@/shared/lib/logger";
 
 const logger = createLogger("AppLayout");
@@ -13,8 +19,20 @@ const NAV_ITEMS = [
 ];
 
 export function AppLayout() {
+	const isOnline = useOnlineStatus();
+	const wasOffline = useRef(false);
 	const navigate = useNavigate();
 	const { data: profile } = useMyProfile();
+
+	useEffect(() => {
+		if (!isOnline) {
+			wasOffline.current = true;
+		} else if (wasOffline.current) {
+			toast.success("Conexión restaurada — recargando…");
+			const timeout = setTimeout(() => window.location.reload(), 1200);
+			return () => clearTimeout(timeout);
+		}
+	}, [isOnline]);
 
 	async function handleSignOut() {
 		logger.info("Cerrando sesion");
@@ -60,9 +78,11 @@ export function AppLayout() {
 				</div>
 			</header>
 
+			{!isOnline && <OfflineBanner />}
+
 			<main>
-				<ErrorBoundary>
-					<Outlet />
+				<ErrorBoundary renderFallback={(error) => <ServerErrorPage errorMessage={error.message} />}>
+					{isOnline ? <Outlet /> : <OfflinePage />}
 				</ErrorBoundary>
 			</main>
 		</div>
