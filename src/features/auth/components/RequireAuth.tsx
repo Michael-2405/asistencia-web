@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useMyProfile } from "../hooks";
+import { useMyProfile } from "../hooks/useProfile";
 import { useSession } from "../lib/auth-client";
 
 interface RequireAuthProps {

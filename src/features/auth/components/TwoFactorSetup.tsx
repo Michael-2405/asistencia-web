@@ -1,10 +1,12 @@
 import { useState } from "react";
 import QRCode from "react-qr-code";
+import { createLogger } from "@/shared/lib/logger";
 import { Button } from "@/shared/ui/button";
 import { authClient } from "../lib/auth-client";
 import { StatusBanner } from "./StatusBanner";
 
 type Stage = "password" | "scan" | "codes";
+const logger = createLogger("TwoFactorSetup");
 
 export function TwoFactorSetup({ onDone }: { onDone: () => void }) {
 	const [stage, setStage] = useState<Stage>("password");
@@ -19,6 +21,7 @@ export function TwoFactorSetup({ onDone }: { onDone: () => void }) {
 		const { data, error: enableError } = await authClient.twoFactor.enable({ password });
 
 		if (enableError || !data) {
+			logger.warn("Falló activación de 2FA: contraseña incorrecta");
 			setError("Contraseña incorrecta");
 			return;
 		}
@@ -37,10 +40,25 @@ export function TwoFactorSetup({ onDone }: { onDone: () => void }) {
 		setError(null);
 		const { error: verifyError } = await authClient.twoFactor.verifyTotp({ code });
 		if (verifyError) {
-			setError("Código inválido");
+			logger.warn("Falló verificación TOTP al activar 2FA");
+			setError(
+				"Código inválido o expirado. Espera a que la app genere uno nuevo e inténtalo de nuevo.",
+			);
 			return;
 		}
+		logger.info("2FA activado exitosamente");
 		setStage("codes");
+	}
+
+	function downloadCodes() {
+		const blob = new Blob([backupCodes.join("\n")], { type: "text/plain" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = "codigos-recuperacion-cuaderno-digital.txt";
+		a.click();
+		URL.revokeObjectURL(url);
+		logger.info("Códigos de recuperación descargados");
 	}
 
 	if (stage === "password") {
@@ -130,7 +148,14 @@ export function TwoFactorSetup({ onDone }: { onDone: () => void }) {
 					Guarda estos códigos ahora. No podrás verlos de nuevo.
 				</StatusBanner>
 			</div>
-			<Button className="mt-4 w-full bg-[#003087] hover:bg-[#002468]" onClick={onDone}>
+			<Button
+				variant="outline"
+				className="mt-3 w-full border-[1.5px] border-[#003087] text-[#003087]"
+				onClick={downloadCodes}
+			>
+				Descargar códigos
+			</Button>
+			<Button className="mt-2 w-full bg-[#003087] hover:bg-[#002468]" onClick={onDone}>
 				Entendido
 			</Button>
 		</div>

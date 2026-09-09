@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import * as api from "./api";
+import * as api from "../api";
 
 export function useMyProfile(enabled = true) {
 	return useQuery({ queryKey: ["me"], queryFn: api.fetchMyProfile, enabled });

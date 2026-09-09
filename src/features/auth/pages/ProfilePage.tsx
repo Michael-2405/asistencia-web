@@ -6,7 +6,7 @@ import { SessionsList } from "../components/SessionsList";
 import { StatusBanner } from "../components/StatusBanner";
 import { SuspendAccountDialog } from "../components/SuspendAccountDialog";
 import { TwoFactorSetup } from "../components/TwoFactorSetup";
-import { useMyProfile } from "../hooks";
+import { useMyProfile } from "../hooks/useProfile";
 import { authClient, useSession } from "../lib/auth-client";
 
 export function ProfilePage() {

@@ -41,3 +41,7 @@
 - **Sin tests** — cero unit tests, cero tests de componentes, cero e2e.
 - **Sin auditoría de accesibilidad** más allá de lo que shadcn/Base UI da por defecto.
 - **Branding cosmético mínimo** — favicon e íconos siguen siendo los defaults de Vite en varios lugares.
+
+## 🟠 Pendiente de investigar (no resuelto)
+
+- **TOTP falla en el primer intento del login incluso con tiempo suficiente en el código** — el segundo intento inmediato sí funciona. Posible desfase de reloj servidor/dispositivo, o el `failed_verification_count`/`locked_until` del schema `two_factor` interfiriendo. Reproducido dos veces.

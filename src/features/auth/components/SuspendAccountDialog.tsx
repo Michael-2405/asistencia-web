@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ApiError } from "@/shared/lib/http";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { useSuspendAccount } from "../hooks";
+import { useSuspendAccount } from "../hooks/useProfile";
 import { authClient } from "../lib/auth-client";
 import { StatusBanner } from "./StatusBanner";
 
