@@ -6,7 +6,6 @@ interface SessionRow {
 	id: string;
 	token: string;
 	userAgent?: string | null;
-	ipAddress?: string | null;
 	createdAt: string;
 }
 
@@ -25,73 +24,54 @@ export function SessionsList() {
 		load();
 	}, [load]);
 
-	async function revoke(token: string) {
-		await authClient.revokeSession({ token });
-		setSessions((prev) => prev.filter((s) => s.token !== token));
-	}
-
 	async function revokeOthers() {
 		await authClient.revokeOtherSessions();
 		load();
 	}
 
-	if (loading) return <p className="mt-3 text-xs font-medium text-[#9a9a9a]">Cargando sesiones…</p>;
+	if (loading) return <p className="text-xs font-medium text-[#8a8f98]">Cargando sesiones…</p>;
 
 	return (
-		<div className="mt-4">
-			<div className="overflow-hidden rounded-lg border border-[#E0E0E0] bg-white">
-				<table className="w-full border-collapse text-[13px]">
-					<thead>
-						<tr className="bg-[#F5F5F5]">
-							<th className="px-3.5 py-2.5 text-left text-[11px] font-bold text-[#6b6b6b]">
-								Dispositivo
-							</th>
-							<th className="px-3.5 py-2.5 text-left text-[11px] font-bold text-[#6b6b6b]">IP</th>
-							<th className="px-3.5 py-2.5 text-left text-[11px] font-bold text-[#6b6b6b]">
-								Fecha
-							</th>
-							<th className="px-3.5 py-2.5" />
-						</tr>
-					</thead>
-					<tbody>
-						{sessions.map((s) => {
-							const isCurrent = s.token === currentSession?.session.token;
-							return (
-								<tr key={s.id} className="border-t border-[#F0F0F0]">
-									<td className="max-w-55 truncate px-3.5 py-2.5 text-[#1a1a1a]">
-										{s.userAgent ?? "Desconocido"}
-										{isCurrent && (
-											<span className="ml-1.5 text-[10px] font-bold text-[#2E7D32]">(actual)</span>
-										)}
-									</td>
-									<td className="px-3.5 py-2.5 text-[#6b6b6b]">{s.ipAddress ?? "—"}</td>
-									<td className="px-3.5 py-2.5 text-[#6b6b6b]">
-										{new Date(s.createdAt).toLocaleString("es-DO")}
-									</td>
-									<td className="px-3.5 py-2.5">
-										{!isCurrent && (
-											<button
-												type="button"
-												onClick={() => revoke(s.token)}
-												className="text-xs font-semibold text-[#C62828]"
-											>
-												Cerrar sesión
-											</button>
-										)}
-									</td>
-								</tr>
-							);
-						})}
-					</tbody>
-				</table>
-			</div>
+		<div>
+			<div className="text-[13.5px] font-bold text-[#1a1d21]">Últimos accesos</div>
+			<table className="mt-2.5 w-full border-collapse text-[12.5px]">
+				<thead>
+					<tr className="text-left font-bold text-[#8a8f98]">
+						<th className="border-b border-[#F0F0F0] py-1.5">Fecha</th>
+						<th className="border-b border-[#F0F0F0] py-1.5">Hora</th>
+						<th className="border-b border-[#F0F0F0] py-1.5">Dispositivo</th>
+					</tr>
+				</thead>
+				<tbody>
+					{sessions.map((s) => {
+						const date = new Date(s.createdAt);
+						const isCurrent = s.token === currentSession?.session.token;
+						return (
+							<tr key={s.id}>
+								<td className="border-b border-[#F5F5F5] py-2 text-[#1a1d21]">
+									{date.toLocaleDateString("es-DO")}
+								</td>
+								<td className="border-b border-[#F5F5F5] py-2 text-[#1a1d21]">
+									{date.toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit" })}
+								</td>
+								<td className="max-w-55 truncate border-b border-[#F5F5F5] py-2 text-[#5b5f66]">
+									{s.userAgent ?? "Desconocido"}
+									{isCurrent && (
+										<span className="ml-1.5 text-[10px] font-bold text-[#2E7D32]">(actual)</span>
+									)}
+								</td>
+							</tr>
+						);
+					})}
+				</tbody>
+			</table>
 			<Button
 				variant="outline"
 				size="sm"
-				className="mt-3 border-[1.5px] border-[#f2b3b3] text-[#C62828]"
+				className="mt-3.5 self-start border-[1.5px] border-[#d5d8dc] text-[#5b5f66]"
 				onClick={revokeOthers}
 			>
-				Cerrar todas las demás sesiones
+				Cerrar todas las demás sesiones activas
 			</Button>
 		</div>
 	);

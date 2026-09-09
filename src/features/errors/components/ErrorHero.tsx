@@ -21,7 +21,7 @@ export function ErrorHero({
 }: ErrorHeroProps) {
 	return (
 		<div className="flex flex-1 items-center justify-center p-10">
-			<div className="relative flex max-w-[440px] flex-col items-center gap-4.5 text-center">
+			<div className="relative flex max-w-110 flex-col items-center gap-4.5 text-center">
 				<span
 					aria-hidden
 					className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 select-none text-[150px] font-extrabold leading-none text-[#F0F2F5]"

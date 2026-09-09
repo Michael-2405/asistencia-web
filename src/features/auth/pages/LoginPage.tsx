@@ -38,6 +38,12 @@ export function LoginPage() {
 		setError(null);
 		setVerifying(true);
 
+		logger.debug("Intentando verificación 2FA", {
+			useBackupCode,
+			codeLength: code.length,
+			clientTime: new Date().toISOString(),
+		});
+
 		const result = useBackupCode
 			? await authClient.twoFactor.verifyBackupCode({ code })
 			: await authClient.twoFactor.verifyTotp({ code });
@@ -45,7 +51,12 @@ export function LoginPage() {
 		setVerifying(false);
 
 		if (result.error) {
-			logger.warn("Verificación 2FA fallida", { useBackupCode });
+			logger.warn("Verificación 2FA fallida", {
+				useBackupCode,
+				errorStatus: result.error.status,
+				errorMessage: result.error.message,
+				errorCode: (result.error as { code?: string }).code,
+			});
 			setError(useBackupCode ? "Código de recuperación inválido" : "Código inválido");
 			return;
 		}
