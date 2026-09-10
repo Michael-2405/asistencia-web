@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StatusBanner } from "@/features/auth/components/StatusBanner";
+import { StatusBanner } from "@/features/auth/components/shared/StatusBanner";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
 import { useCloneCourses, useCourses, useSchoolYears } from "../hooks";

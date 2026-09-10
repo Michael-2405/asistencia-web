@@ -1,4 +1,4 @@
-import { usePasswordStrength } from "../hooks/usePasswordStrength";
+import { usePasswordStrength } from "../../hooks/usePasswordStrength";
 
 export function PasswordStrengthMeter({ password }: { password: string }) {
 	const { strength, label, color, hasValue } = usePasswordStrength(password);

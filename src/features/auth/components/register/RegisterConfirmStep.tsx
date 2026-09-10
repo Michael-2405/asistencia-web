@@ -1,4 +1,4 @@
-import type { RegisterTeacherFormValues } from "../schemas/register-teacher.schema";
+import type { RegisterTeacherFormValues } from "../../schemas/register-teacher.schema";
 
 interface RegisterConfirmStepProps {
 	values: RegisterTeacherFormValues;

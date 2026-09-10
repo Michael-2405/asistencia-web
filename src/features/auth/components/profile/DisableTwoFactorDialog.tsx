@@ -3,9 +3,9 @@ import { toast } from "sonner";
 import { createLogger } from "@/shared/lib/logger";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { authClient } from "../lib/auth-client";
-import { PasswordInput } from "./PasswordInput";
-import { StatusBanner } from "./StatusBanner";
+import { authClient } from "../../lib/auth-client";
+import { PasswordInput } from "../shared/PasswordInput";
+import { StatusBanner } from "../shared/StatusBanner";
 
 const logger = createLogger("DisableTwoFactorDialog");
 

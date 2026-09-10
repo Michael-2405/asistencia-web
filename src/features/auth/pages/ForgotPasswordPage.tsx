@@ -2,9 +2,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useCountdown } from "@/shared/hooks/useCountdown";
 import { createLogger } from "@/shared/lib/logger";
-import { AuthLayout } from "../components/AuthLayout";
-import { ForgotPasswordRequestView } from "../components/ForgotPasswordRequestView";
-import { ForgotPasswordSentView } from "../components/ForgotPasswordSentView";
+import { ForgotPasswordRequestView } from "../components/reset-password/ForgotPasswordRequestView";
+import { ForgotPasswordSentView } from "../components/reset-password/ForgotPasswordSentView";
+import { AuthLayout } from "../components/shared/AuthLayout";
 import { authClient } from "../lib/auth-client";
 
 const RESEND_COOLDOWN_SECONDS = 60;

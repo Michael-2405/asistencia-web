@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { ChangeEmailDialog } from "../components/ChangeEmailDialog";
-import { ChangePasswordDialog } from "../components/ChangePasswordDialog";
-import { DisableTwoFactorDialog } from "../components/DisableTwoFactorDialog";
 import { AccountSection } from "../components/profile/AccountSection";
+import { ChangeEmailDialog } from "../components/profile/ChangeEmailDialog";
+import { ChangePasswordDialog } from "../components/profile/ChangePasswordDialog";
 import { DangerZoneSection } from "../components/profile/DangerZoneSection";
+import { DisableTwoFactorDialog } from "../components/profile/DisableTwoFactorDialog";
 import { type ProfileSection, ProfileSidebar } from "../components/profile/ProfileSidebar";
 import { SecuritySection } from "../components/profile/SecuritySection";
+import { SuspendAccountDialog } from "../components/profile/SuspendAccountDialog";
 import { TeacherConfigSection } from "../components/profile/TeacherConfigSection";
-import { SuspendAccountDialog } from "../components/SuspendAccountDialog";
-import { TwoFactorSetup } from "../components/TwoFactorSetup";
+import { TwoFactorSetup } from "../components/profile/TwoFactorSetup";
 import { useMyProfile } from "../hooks/useProfile";
 import { useSession } from "../lib/auth-client";
 

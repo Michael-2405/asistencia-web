@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import type { UseFormReturn } from "react-hook-form";
 import { fetchSubjects } from "@/features/courses/api";
-import { FIELD_CLASS } from "../constants";
-import type { RegisterTeacherFormValues } from "../schemas/register-teacher.schema";
-import { PasswordInput } from "./PasswordInput";
-import { PasswordStrengthMeter } from "./PasswordStrengthMeter";
+import { FIELD_CLASS } from "../../constants";
+import type { RegisterTeacherFormValues } from "../../schemas/register-teacher.schema";
+import { PasswordInput } from "../shared/PasswordInput";
+import { PasswordStrengthMeter } from "../shared/PasswordStrengthMeter";
 
 interface RegisterProfileStepProps {
 	form: UseFormReturn<RegisterTeacherFormValues>;

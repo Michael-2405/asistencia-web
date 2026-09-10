@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createLogger } from "@/shared/lib/logger";
-import { AuthLayout } from "../components/AuthLayout";
-import { type LoginCredentials, LoginCredentialsForm } from "../components/LoginCredentialsForm";
-import { TwoFactorVerifyForm } from "../components/TwoFactorVerifyForm";
+import {
+	type LoginCredentials,
+	LoginCredentialsForm,
+} from "../components/login/LoginCredentialsForm";
+import { TwoFactorVerifyForm } from "../components/login/TwoFactorVerifyForm";
+import { AuthLayout } from "../components/shared/AuthLayout";
 import { authClient } from "../lib/auth-client";
 
 const logger = createLogger("LoginPage");

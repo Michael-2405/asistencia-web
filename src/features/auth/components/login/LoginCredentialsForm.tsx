@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 import { Button } from "@/shared/ui/button";
-import { PasswordInput } from "./PasswordInput";
+import { PasswordInput } from "../shared/PasswordInput";
 
 const loginSchema = z.object({
 	email: z.string().email("Correo inválido"),

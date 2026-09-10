@@ -4,8 +4,8 @@ import { useCountdown } from "@/shared/hooks/useCountdown";
 import { createLogger } from "@/shared/lib/logger";
 import { Button } from "@/shared/ui/button";
 import { authClient } from "../lib/auth-client";
-import { AuthLayout } from "./AuthLayout";
-import { EmailSentHeader } from "./EmailSentHeader";
+import { AuthLayout } from "./shared/AuthLayout";
+import { EmailSentHeader } from "./shared/EmailSentHeader";
 
 const RESEND_COOLDOWN_SECONDS = 60;
 const logger = createLogger("VerifyEmailNotice");

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/shared/ui/button";
-import { StatusBanner } from "./StatusBanner";
+import { StatusBanner } from "../shared/StatusBanner";
 
 interface TwoFactorVerifyFormProps {
 	onSubmit: (code: string, useBackupCode: boolean) => Promise<void>;

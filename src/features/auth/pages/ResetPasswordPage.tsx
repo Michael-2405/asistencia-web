@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { createLogger } from "@/shared/lib/logger";
-import { AuthLayout } from "../components/AuthLayout";
-import { AuthSuccessScreen } from "../components/AuthSuccessScreen";
-import { ResetPasswordForm } from "../components/ResetPasswordForm";
+import { ResetPasswordForm } from "../components/reset-password/ResetPasswordForm";
+import { AuthLayout } from "../components/shared/AuthLayout";
+import { AuthSuccessScreen } from "../components/shared/AuthSuccessScreen";
 import { authClient } from "../lib/auth-client";
 
 const logger = createLogger("ResetPasswordPage");

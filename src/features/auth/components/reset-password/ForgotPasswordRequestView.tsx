@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/shared/ui/button";
-import { FIELD_CLASS } from "../constants";
+import { FIELD_CLASS } from "../../constants";
 
 interface ForgotPasswordRequestViewProps {
 	email: string;

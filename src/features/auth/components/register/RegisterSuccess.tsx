@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { AuthSuccessScreen } from "./AuthSuccessScreen";
+import { AuthSuccessScreen } from "../shared/AuthSuccessScreen";
 
 export function RegisterSuccess({ email }: { email: string }) {
 	const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StatusBanner } from "@/features/auth/components/StatusBanner";
+import { StatusBanner } from "@/features/auth/components/shared/StatusBanner";
 import { ApiError } from "@/shared/lib/http";
 import { Button } from "@/shared/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/shared/ui/sheet";

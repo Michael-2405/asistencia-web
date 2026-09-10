@@ -1,5 +1,5 @@
 import { Button } from "@/shared/ui/button";
-import { SessionsList } from "../SessionsList";
+import { SessionsList } from "./SessionsList";
 
 interface SecuritySectionProps {
 	twoFactorEnabled: boolean;

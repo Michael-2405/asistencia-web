@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { RequireAuth } from "@/features/auth/components/RequireAuth";
+import { RequireAuth } from "@/features/auth/components/shared/RequireAuth";
 import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 import { AppLayout } from "@/shared/layouts/AppLayout";
 

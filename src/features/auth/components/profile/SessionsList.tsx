@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/shared/ui/button";
-import { authClient, useSession } from "../lib/auth-client";
+import { authClient, useSession } from "../../lib/auth-client";
 
 interface SessionRow {
 	id: string;

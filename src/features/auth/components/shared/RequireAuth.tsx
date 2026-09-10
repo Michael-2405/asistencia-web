@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { UnauthenticatedPage } from "@/features/errors/pages/UnauthenticatedPage";
-import { useMyProfile } from "../hooks/useProfile";
-import { useSession } from "../lib/auth-client";
+import { useMyProfile } from "../../hooks/useProfile";
+import { useSession } from "../../lib/auth-client";
 
 interface RequireAuthProps {
 	children: ReactNode;

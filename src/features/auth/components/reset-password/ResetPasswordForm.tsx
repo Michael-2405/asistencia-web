@@ -1,8 +1,8 @@
 import { Button } from "@/shared/ui/button";
-import { usePasswordStrength } from "../hooks/usePasswordStrength";
-import { PasswordInput } from "./PasswordInput";
-import { allRequirementsMet, PasswordRequirementsList } from "./PasswordRequirementsList";
-import { StatusBanner } from "./StatusBanner";
+import { usePasswordStrength } from "../../hooks/usePasswordStrength";
+import { PasswordInput } from "../shared/PasswordInput";
+import { allRequirementsMet, PasswordRequirementsList } from "../shared/PasswordRequirementsList";
+import { StatusBanner } from "../shared/StatusBanner";
 
 interface ResetPasswordFormProps {
 	newPassword: string;

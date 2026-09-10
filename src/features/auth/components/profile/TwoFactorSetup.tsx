@@ -2,8 +2,8 @@ import { useState } from "react";
 import QRCode from "react-qr-code";
 import { createLogger } from "@/shared/lib/logger";
 import { Button } from "@/shared/ui/button";
-import { authClient } from "../lib/auth-client";
-import { StatusBanner } from "./StatusBanner";
+import { authClient } from "../../lib/auth-client";
+import { StatusBanner } from "../shared/StatusBanner";
 
 type Stage = "password" | "scan" | "codes";
 const logger = createLogger("TwoFactorSetup");

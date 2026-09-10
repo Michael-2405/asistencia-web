@@ -6,12 +6,12 @@ import { fetchSubjects } from "@/features/courses/api";
 import { ApiError } from "@/shared/lib/http";
 import { createLogger } from "@/shared/lib/logger";
 import { registerTeacher } from "../api";
-import { AuthLayout } from "../components/AuthLayout";
-import { RegisterConfirmStep } from "../components/RegisterConfirmStep";
-import { RegisterProfileStep } from "../components/RegisterProfileStep";
-import { RegisterSuccess } from "../components/RegisterSuccess";
-import { StatusBanner } from "../components/StatusBanner";
-import { StepIndicator } from "../components/StepIndicator";
+import { RegisterConfirmStep } from "../components/register/RegisterConfirmStep";
+import { RegisterProfileStep } from "../components/register/RegisterProfileStep";
+import { RegisterSuccess } from "../components/register/RegisterSuccess";
+import { AuthLayout } from "../components/shared/AuthLayout";
+import { StatusBanner } from "../components/shared/StatusBanner";
+import { StepIndicator } from "../components/shared/StepIndicator";
 
 import {
 	type RegisterTeacherFormValues,
