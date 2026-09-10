@@ -1,37 +1,40 @@
 import type { ReactNode } from "react";
 
 interface AuthLayoutProps {
-	tagline: string;
-	footerNote: string;
 	children: ReactNode;
+	title?: string;
+	subtitle?: string;
+	wide?: boolean;
 }
 
-export function AuthLayout({ tagline, footerNote, children }: AuthLayoutProps) {
+export function AuthLayout({
+	children,
+	title = "Cuaderno Digital",
+	subtitle = "Gestiona la asistencia y las calificaciones de tus estudiantes.",
+	wide = false,
+}: AuthLayoutProps) {
 	return (
-		<div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-			<div className="hidden flex-col justify-between bg-linear-to-br from-[#001d5c] via-[#003087] to-[#0a3fa8] p-14 text-white lg:flex">
-				<div>
-					<div className="flex items-center gap-3">
-						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-[15px] font-extrabold text-[#003087]">
-							RD
-						</div>
-						<div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/25 bg-white/10 text-[15px] font-extrabold">
-							MINERD
-						</div>
+		<div
+			className={`grid min-h-screen grid-cols-1 bg-white ${wide ? "lg:grid-cols-[1fr_1.35fr]" : "lg:grid-cols-2"}`}
+		>
+			<div className="relative hidden flex-col justify-between overflow-hidden bg-linear-to-b from-[#003087] to-[#00143c] p-11 lg:flex">
+				<div className="relative z-10 flex items-center gap-3">
+					<div className="flex h-9.5 w-9.5 items-center justify-center rounded-[9px] bg-white text-[17px] font-extrabold text-[#003087]">
+						CD
 					</div>
-					<p className="mt-10 text-xs font-semibold uppercase tracking-wide text-[#9db3dd]">
-						Ministerio de Educación · República Dominicana
-					</p>
-					<h1 className="mt-2 text-3xl font-extrabold leading-tight">Registro de Grado Digital</h1>
-					<p className="mt-2 max-w-sm text-[15px] font-medium text-[#c3d2f0]">{tagline}</p>
+					<span className="text-[17px] font-extrabold text-white">Cuaderno Digital</span>
 				</div>
-				<div className="border-t border-white/20 pt-5 text-xs font-medium text-[#9db3dd]">
-					{footerNote}
+				<div className="relative z-10 max-w-105 text-white">
+					<h1 className="mb-3.5 text-[30px] font-extrabold leading-tight lg:text-[34px]">
+						{title}
+					</h1>
+					<p className="text-[15px] leading-relaxed text-[#dbe4f5] lg:text-base">{subtitle}</p>
 				</div>
+				<div className="relative z-10 text-xs text-[#9fb2da]">© 2026 Cuaderno Digital</div>
 			</div>
 
 			<div className="flex items-center justify-center p-10">
-				<div className="w-full max-w-105">{children}</div>
+				<div className={`w-full ${wide ? "max-w-310" : "max-w-95"}`}>{children}</div>
 			</div>
 		</div>
 	);

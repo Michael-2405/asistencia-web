@@ -66,10 +66,7 @@ export function LoginPage() {
 	}
 
 	return (
-		<AuthLayout
-			tagline="Gestiona la asistencia y las calificaciones de tus estudiantes"
-			footerNote="Cuaderno Digital — organiza tu aula en un solo lugar."
-		>
+		<AuthLayout>
 			{requiresTwoFactor ? (
 				<TwoFactorVerifyForm onSubmit={handleTwoFactorSubmit} verifying={verifying} error={error} />
 			) : (

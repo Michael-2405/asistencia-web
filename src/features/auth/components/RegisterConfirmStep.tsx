@@ -1,10 +1,8 @@
-import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
 import type { RegisterTeacherFormValues } from "../schemas/register-teacher.schema";
-import { SummaryRow } from "./SummaryRow";
 
 interface RegisterConfirmStepProps {
 	values: RegisterTeacherFormValues;
+	subjectName?: string;
 	confirmed: boolean;
 	onConfirmedChange: (v: boolean) => void;
 	onBack: () => void;
@@ -14,56 +12,75 @@ interface RegisterConfirmStepProps {
 
 export function RegisterConfirmStep({
 	values,
+	subjectName,
 	confirmed,
 	onConfirmedChange,
 	onBack,
 	onSubmit,
 	isSubmitting,
 }: RegisterConfirmStepProps) {
+	const items = [
+		{ label: "Nombre completo", value: values.fullName },
+		{ label: "Correo electrónico", value: values.email },
+		{
+			label: "Nivel educativo",
+			value: values.educationLevel === "PRIMARY" ? "Nivel Primario" : "Nivel Secundario",
+		},
+		{
+			label: "Tipo de docente",
+			value: values.isHomeroomTeacher ? "Encargado de sección" : "Docente de área",
+		},
+		{
+			label: "Materia",
+			value: values.isHomeroomTeacher ? "Materias troncales (todas)" : (subjectName ?? "—"),
+		},
+	];
+
 	return (
-		<div>
-			<h2 className="text-[22px] font-bold text-[#1a1a1a]">Confirma tus datos</h2>
-			<div className="mt-5 flex flex-col gap-2.5 rounded-lg border border-[#E0E0E0] p-4 text-[13px]">
-				<SummaryRow label="Nombre" value={values.fullName} />
-				<SummaryRow label="Correo" value={values.email} />
-				<SummaryRow
-					label="Nivel"
-					value={values.educationLevel === "PRIMARY" ? "Primario" : "Secundario"}
-				/>
-				<SummaryRow
-					label="Rol"
-					value={values.isHomeroomTeacher ? "Encargado de sección" : "Docente de área"}
-				/>
+		<div className="flex flex-col gap-4">
+			<h2 className="text-xl font-extrabold text-[#1a1d21]">Confirmación</h2>
+
+			<div className="flex flex-col gap-2.5 rounded-[10px] border border-[#E0E0E0] p-4.5">
+				{items.map((item) => (
+					<div
+						key={item.label}
+						className="flex justify-between gap-3 border-b border-[#F0F0F0] pb-2 text-[13.5px] last:border-b-0 last:pb-0"
+					>
+						<span className="text-[#8a8f98]">{item.label}</span>
+						<span className="text-right font-semibold text-[#1a1d21]">{item.value}</span>
+					</div>
+				))}
 			</div>
 
-			<label htmlFor="confirm-data" className="mt-5 flex items-center gap-2">
-				<Checkbox
-					id="confirm-data"
-					checked={confirmed}
-					onCheckedChange={(c) => onConfirmedChange(c === true)}
-				/>
-				<span className="text-xs font-medium text-[#333]">
-					Confirmo que los datos son correctos.
-				</span>
-			</label>
-
-			<div className="mt-5 flex gap-2.5">
-				<Button
-					type="button"
-					variant="outline"
-					className="flex-1 border-[#E0E0E0] text-[#6b6b6b]"
-					onClick={onBack}
+			<button
+				type="button"
+				onClick={() => onConfirmedChange(!confirmed)}
+				className="flex items-start gap-2.5 text-left"
+			>
+				<div
+					className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border-[1.5px] text-[11px] text-white ${confirmed ? "border-[#003087] bg-[#003087]" : "border-[#d5d8dc]"}`}
 				>
-					Atrás
-				</Button>
-				<Button
+					{confirmed && "✓"}
+				</div>
+				<span className="text-[13px] text-[#1a1d21]">Confirmo que los datos son correctos</span>
+			</button>
+
+			<div className="flex gap-2.5">
+				<button
+					type="button"
+					onClick={onBack}
+					className="flex-1 rounded-lg border-[1.5px] border-[#d5d8dc] py-3 text-sm font-semibold text-[#5b5f66]"
+				>
+					Volver
+				</button>
+				<button
 					type="button"
 					disabled={!confirmed || isSubmitting}
-					className="flex-2 bg-[#003087] hover:bg-[#002468] disabled:bg-[#a9b8d9]"
 					onClick={onSubmit}
+					className="flex-1 rounded-lg bg-[#003087] py-3 text-sm font-bold text-white disabled:bg-[#a8b5d6]"
 				>
 					{isSubmitting ? "Creando…" : "Crear cuenta"}
-				</Button>
+				</button>
 			</div>
 		</div>
 	);

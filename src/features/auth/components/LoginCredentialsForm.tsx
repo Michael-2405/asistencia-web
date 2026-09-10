@@ -3,9 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 import { Button } from "@/shared/ui/button";
-import { FIELD_CLASS } from "../constants";
 import { PasswordInput } from "./PasswordInput";
-import { StatusBanner } from "./StatusBanner";
 
 const loginSchema = z.object({
 	email: z.string().email("Correo inválido"),
@@ -25,35 +23,45 @@ export function LoginCredentialsForm({ onSubmit, error }: LoginCredentialsFormPr
 		defaultValues: { email: "", password: "" },
 	});
 
+	const hasAuthError = Boolean(error);
+	const fieldBorder = hasAuthError ? "border-[#C62828]" : "border-[#d5d8dc]";
+
 	return (
-		<div>
-			<h2 className="text-2xl font-bold text-[#1a1a1a]">Iniciar sesión</h2>
-			<p className="mt-1.5 text-[13px] font-medium text-[#6b6b6b]">Ingresa con tu correo</p>
+		<div className="flex flex-col gap-5.5">
+			<div>
+				<h2 className="mb-1.5 text-2xl font-extrabold text-[#1a1d21]">Iniciar sesión</h2>
+				<span className="text-[13.5px] text-[#8a8f98]">Accede con tu cuenta institucional</span>
+			</div>
 
 			{error && (
-				<div className="mt-5">
-					<StatusBanner variant="error">{error}</StatusBanner>
+				<div className="flex items-center gap-2 rounded-lg border border-[#F3B8B4] bg-[#FDECEA] px-3.5 py-2.5 text-[13px] text-[#8f1f1f]">
+					<span>⚠</span>
+					<span>{error}</span>
 				</div>
 			)}
 
-			<form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
+			<form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
 				<label className="flex flex-col gap-1.5">
-					<span className="text-xs font-semibold text-[#333]">Correo electrónico</span>
+					<span className="text-xs font-bold text-[#1a1d21]">Correo electrónico</span>
 					<input
 						type="email"
 						{...form.register("email")}
-						placeholder="nombre.apellido@correo.com"
-						className={FIELD_CLASS}
+						placeholder="nombre@escuela.edu.do"
+						className={`w-full rounded-lg border-[1.5px] ${fieldBorder} px-3.5 py-2.5 text-sm outline-none focus:border-[#003087]`}
 					/>
 				</label>
 
 				<label htmlFor="login-password" className="flex flex-col gap-1.5">
-					<span className="text-xs font-semibold text-[#333]">Contraseña</span>
-					<PasswordInput id="login-password" {...form.register("password")} />
+					<span className="text-xs font-bold text-[#1a1d21]">Contraseña</span>
+					<PasswordInput
+						id="login-password"
+						{...form.register("password")}
+						borderClassName={fieldBorder}
+					/>
 				</label>
 
 				<div className="text-right">
-					<Link to="/forgot-password" className="text-xs font-semibold text-[#003087]">
+					<Link to="/forgot-password" className="text-[12.5px] font-semibold text-[#003087]">
 						¿Olvidaste tu contraseña?
 					</Link>
 				</div>
@@ -61,20 +69,27 @@ export function LoginCredentialsForm({ onSubmit, error }: LoginCredentialsFormPr
 				<Button
 					type="submit"
 					disabled={form.formState.isSubmitting}
-					className="w-full bg-[#003087] hover:bg-[#002468]"
+					className="w-full bg-[#003087] hover:bg-[#002468] disabled:bg-[#5a6ea8]"
 				>
-					Iniciar sesión
+					{form.formState.isSubmitting && (
+						<span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+					)}
+					{form.formState.isSubmitting ? "Iniciando sesión…" : "Iniciar sesión"}
 				</Button>
-
-				<div className="my-2 border-t border-[#E0E0E0]" />
-
-				<p className="text-center text-xs font-medium text-[#8a8a8a]">
-					¿No tienes cuenta?{" "}
-					<Link to="/register" className="font-semibold text-[#003087]">
-						Regístrate
-					</Link>
-				</p>
 			</form>
+
+			<div className="flex items-center gap-3">
+				<div className="h-px flex-1 bg-[#E0E0E0]" />
+				<span className="text-[11.5px] text-[#a8adb5]">o</span>
+				<div className="h-px flex-1 bg-[#E0E0E0]" />
+			</div>
+
+			<p className="text-center text-[13.5px] text-[#5b5f66]">
+				¿No tienes cuenta?{" "}
+				<Link to="/register" className="font-bold text-[#003087]">
+					Regístrate
+				</Link>
+			</p>
 		</div>
 	);
 }

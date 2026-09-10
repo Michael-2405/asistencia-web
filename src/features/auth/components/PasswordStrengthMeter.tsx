@@ -6,7 +6,7 @@ export function PasswordStrengthMeter({ password }: { password: string }) {
 
 	return (
 		<>
-			<div className="mt-0.5 flex gap-1">
+			<div className="mt-1 flex gap-1">
 				{[0, 1, 2].map((i) => (
 					<div
 						key={i}
@@ -15,7 +15,7 @@ export function PasswordStrengthMeter({ password }: { password: string }) {
 					/>
 				))}
 			</div>
-			<span className="text-[11px] font-semibold" style={{ color }}>
+			<span className="text-[11.5px] font-bold" style={{ color }}>
 				{label}
 			</span>
 		</>

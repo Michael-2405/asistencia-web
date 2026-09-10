@@ -35,10 +35,7 @@ export function VerifyEmailNotice() {
 	}
 
 	return (
-		<AuthLayout
-			tagline="Confirma tu cuenta"
-			footerNote="Cuaderno Digital — organiza tu aula en un solo lugar."
-		>
+		<AuthLayout>
 			<div className="text-center">
 				<EmailSentHeader
 					title="Revisa tu correo"

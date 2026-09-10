@@ -16,30 +16,35 @@ export function ForgotPasswordRequestView({
 	submitting,
 }: ForgotPasswordRequestViewProps) {
 	return (
-		<div>
-			<h2 className="text-[22px] font-bold text-[#1a1a1a]">¿Olvidaste tu contraseña?</h2>
-			<p className="mt-2 text-[13px] font-medium text-[#6b6b6b]">
-				Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
-			</p>
-			<label className="mt-5 flex flex-col gap-1.5">
-				<span className="text-xs font-semibold text-[#333]">Correo electrónico</span>
+		<div className="flex flex-col gap-4.5">
+			<div>
+				<h2 className="mb-1.5 text-[22px] font-extrabold text-[#1a1d21]">
+					¿Olvidaste tu contraseña?
+				</h2>
+				<p className="text-[13.5px] leading-relaxed text-[#5b5f66]">
+					Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+				</p>
+			</div>
+			<label className="flex flex-col gap-1.5">
+				<span className="text-xs font-bold text-[#1a1d21]">Correo electrónico</span>
 				<input
 					type="email"
 					value={email}
 					onChange={(e) => onEmailChange(e.target.value)}
+					placeholder="nombre@escuela.edu.do"
 					className={FIELD_CLASS}
 				/>
 			</label>
 			<Button
-				className="mt-4 w-full bg-[#003087] hover:bg-[#002468]"
 				onClick={onSubmit}
 				disabled={!email || submitting}
+				className="bg-[#003087] hover:bg-[#002468]"
 			>
 				{submitting ? "Enviando…" : "Enviar enlace"}
 			</Button>
-			<p className="mt-4 text-center text-xs font-semibold text-[#003087]">
-				<Link to="/login">Volver al inicio de sesión</Link>
-			</p>
+			<Link to="/login" className="text-center text-[13px] font-semibold text-[#003087]">
+				Volver al inicio de sesión
+			</Link>
 		</div>
 	);
 }

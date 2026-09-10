@@ -1,6 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { fetchSubjects } from "@/features/courses/api";
 import { ApiError } from "@/shared/lib/http";
 import { createLogger } from "@/shared/lib/logger";
 import { registerTeacher } from "../api";
@@ -10,6 +12,7 @@ import { RegisterProfileStep } from "../components/RegisterProfileStep";
 import { RegisterSuccess } from "../components/RegisterSuccess";
 import { StatusBanner } from "../components/StatusBanner";
 import { StepIndicator } from "../components/StepIndicator";
+
 import {
 	type RegisterTeacherFormValues,
 	registerTeacherSchema,
@@ -35,6 +38,9 @@ export function RegisterPage() {
 			subjectId: undefined,
 		},
 	});
+
+	const { data: subjects } = useQuery({ queryKey: ["subjects"], queryFn: fetchSubjects });
+	const selectedSubjectName = subjects?.find((s) => s.id === form.getValues().subjectId)?.name;
 
 	async function goToStep2() {
 		const valid = await form.trigger([
@@ -79,23 +85,25 @@ export function RegisterPage() {
 	if (accountCreated) {
 		return (
 			<AuthLayout
-				tagline="Crea tu cuenta de docente"
-				footerNote="Cuaderno Digital — organiza tu aula en un solo lugar."
+				title="Crea tu cuenta de docente"
+				subtitle="Regístrate para empezar a gestionar la asistencia y las calificaciones de tus estudiantes."
+				wide
 			>
-				<RegisterSuccess />
+				<RegisterSuccess email={form.getValues().email} />
 			</AuthLayout>
 		);
 	}
 
 	return (
 		<AuthLayout
-			tagline="Crea tu cuenta de docente"
-			footerNote="Cuaderno Digital — organiza tu aula en un solo lugar."
+			title="Crea tu cuenta de docente"
+			subtitle="Regístrate para empezar a gestionar la asistencia y las calificaciones de tus estudiantes."
+			wide
 		>
 			<StepIndicator steps={["Perfil", "Confirmación"]} currentStep={step} />
 
 			{submitError && (
-				<div className="mb-4">
+				<div className="mt-5 mb-4">
 					<StatusBanner variant="error">{submitError}</StatusBanner>
 				</div>
 			)}
@@ -105,6 +113,7 @@ export function RegisterPage() {
 			{step === 2 && (
 				<RegisterConfirmStep
 					values={form.getValues()}
+					subjectName={selectedSubjectName}
 					confirmed={confirmed}
 					onConfirmedChange={setConfirmed}
 					onBack={() => setStep(1)}

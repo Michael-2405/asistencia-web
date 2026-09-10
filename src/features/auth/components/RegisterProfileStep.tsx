@@ -1,11 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
 import type { UseFormReturn } from "react-hook-form";
-import { Link } from "react-router-dom";
-import { Button } from "@/shared/ui/button";
+import { fetchSubjects } from "@/features/courses/api";
 import { FIELD_CLASS } from "../constants";
 import type { RegisterTeacherFormValues } from "../schemas/register-teacher.schema";
 import { PasswordInput } from "./PasswordInput";
 import { PasswordStrengthMeter } from "./PasswordStrengthMeter";
-import { StatusBanner } from "./StatusBanner";
 
 interface RegisterProfileStepProps {
 	form: UseFormReturn<RegisterTeacherFormValues>;
@@ -14,69 +13,99 @@ interface RegisterProfileStepProps {
 
 export function RegisterProfileStep({ form, onContinue }: RegisterProfileStepProps) {
 	const values = form.watch();
+	const { data: subjects } = useQuery({ queryKey: ["subjects"], queryFn: fetchSubjects });
+
+	const showPrimarioQuestion = values.educationLevel === "PRIMARY";
+	const showMateriaSelect =
+		values.educationLevel === "SECONDARY" ||
+		(values.educationLevel === "PRIMARY" && values.isHomeroomTeacher === false);
+	const filteredSubjects = (subjects ?? []).filter(
+		(s) => s.level === values.educationLevel || s.level === "BOTH",
+	);
+
+	const passwordsMismatch =
+		Boolean(values.confirmPassword) && values.confirmPassword !== values.password;
+
+	const canContinue =
+		values.fullName &&
+		values.email &&
+		values.password &&
+		values.confirmPassword === values.password &&
+		values.educationLevel &&
+		(values.educationLevel === "SECONDARY" ||
+			values.isHomeroomTeacher === true ||
+			values.isHomeroomTeacher === false);
 
 	return (
-		<div className="space-y-4">
-			<h2 className="text-[22px] font-bold text-[#1a1a1a]">Información del perfil docente</h2>
+		<div className="flex flex-col gap-4">
+			<h2 className="text-xl font-extrabold text-[#1a1d21]">Información del perfil docente</h2>
 
 			<label className="flex flex-col gap-1.5">
-				<span className="text-xs font-semibold text-[#333]">Nombre completo</span>
-				<input {...form.register("fullName")} className={FIELD_CLASS} />
-				{form.formState.errors.fullName && (
-					<span className="text-xs text-[#C62828]">{form.formState.errors.fullName.message}</span>
-				)}
-			</label>
-
-			<label className="flex flex-col gap-1.5">
-				<span className="text-xs font-semibold text-[#333]">Correo electrónico</span>
+				<span className="text-xs font-bold text-[#1a1d21]">Nombre completo</span>
 				<input
-					type="email"
-					{...form.register("email")}
-					placeholder="nombre.apellido@correo.com"
+					{...form.register("fullName")}
+					placeholder="Carmen Julia Ventura"
 					className={FIELD_CLASS}
 				/>
-				{form.formState.errors.email && (
-					<span className="text-xs text-[#C62828]">{form.formState.errors.email.message}</span>
-				)}
-			</label>
-
-			<label htmlFor="register-password" className="flex flex-col gap-1.5">
-				<span className="text-xs font-semibold text-[#333]">Contraseña</span>
-				<PasswordInput id="register-password" {...form.register("password")} />
-				<PasswordStrengthMeter password={values.password ?? ""} />
-				{form.formState.errors.password && (
-					<span className="text-xs text-[#C62828]">{form.formState.errors.password.message}</span>
-				)}
-			</label>
-
-			<label htmlFor="register-confirm-password" className="flex flex-col gap-1.5">
-				<span className="text-xs font-semibold text-[#333]">Confirmar contraseña</span>
-				<PasswordInput id="register-confirm-password" {...form.register("confirmPassword")} />
-				{form.formState.errors.confirmPassword && (
-					<span className="text-xs text-[#C62828]">
-						{form.formState.errors.confirmPassword.message}
+				{form.formState.errors.fullName && (
+					<span className="text-[11.5px] text-[#C62828]">
+						{form.formState.errors.fullName.message}
 					</span>
 				)}
 			</label>
 
-			<div>
-				<span className="text-xs font-semibold text-[#333]">
+			<label className="flex flex-col gap-1.5">
+				<span className="text-xs font-bold text-[#1a1d21]">Correo electrónico</span>
+				<input
+					type="email"
+					{...form.register("email")}
+					placeholder="nombre@escuela.edu.do"
+					className={FIELD_CLASS}
+				/>
+				{form.formState.errors.email && (
+					<span className="text-[11.5px] text-[#C62828]">
+						{form.formState.errors.email.message}
+					</span>
+				)}
+			</label>
+
+			<div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+				<label htmlFor="register-password" className="flex flex-col gap-1.5">
+					<span className="text-xs font-bold text-[#1a1d21]">Contraseña</span>
+					<PasswordInput id="register-password" {...form.register("password")} />
+					<PasswordStrengthMeter password={values.password ?? ""} />
+				</label>
+				<label htmlFor="register-confirm-password" className="flex flex-col gap-1.5">
+					<span className="text-xs font-bold text-[#1a1d21]">Confirmar contraseña</span>
+					<PasswordInput
+						id="register-confirm-password"
+						{...form.register("confirmPassword")}
+						borderClassName={passwordsMismatch ? "border-[#C62828]" : "border-[#d5d8dc]"}
+					/>
+					{passwordsMismatch && (
+						<span className="text-[11.5px] text-[#C62828]">Las contraseñas no coinciden</span>
+					)}
+				</label>
+			</div>
+
+			<div className="flex flex-col gap-2">
+				<span className="text-xs font-bold text-[#1a1d21]">
 					Nivel educativo en el que imparte clases
 				</span>
-				<div className="mt-2 flex gap-2.5">
+				<div className="flex gap-2.5">
 					{(["PRIMARY", "SECONDARY"] as const).map((level) => (
 						<button
-							type="button"
 							key={level}
+							type="button"
 							onClick={() => {
 								form.setValue("educationLevel", level);
-								if (level === "SECONDARY") form.setValue("isHomeroomTeacher", false);
+								form.setValue(
+									"isHomeroomTeacher",
+									level === "SECONDARY" ? false : (undefined as unknown as boolean),
+								);
+								form.setValue("subjectId", undefined);
 							}}
-							className={`flex-1 rounded-lg border-[1.5px] py-2.5 text-xs font-bold ${
-								values.educationLevel === level
-									? "border-[#003087] bg-[#eef3fb] text-[#003087]"
-									: "border-[#E0E0E0] text-[#333]"
-							}`}
+							className={`flex-1 rounded-lg border-[1.5px] py-2.5 text-[13.5px] font-bold ${values.educationLevel === level ? "border-[#003087] bg-[#EEF2FB] text-[#003087]" : "border-[#d5d8dc] text-[#5b5f66]"}`}
 						>
 							{level === "PRIMARY" ? "Nivel Primario" : "Nivel Secundario"}
 						</button>
@@ -84,58 +113,70 @@ export function RegisterProfileStep({ form, onContinue }: RegisterProfileStepPro
 				</div>
 			</div>
 
-			{values.educationLevel === "PRIMARY" && (
-				<div>
-					<span className="text-xs font-semibold text-[#333]">
+			{showPrimarioQuestion && (
+				<div className="flex flex-col gap-2.5 rounded-[9px] bg-[#F5F5F5] p-3.5">
+					<span className="text-xs font-bold text-[#1a1d21]">
 						¿Eres docente encargado de una sección?
 					</span>
-					<div className="mt-2 flex flex-col gap-2">
-						{[
-							{
-								value: true,
-								title: "Sí — Soy docente encargado",
-								desc: "Imparto las materias troncales de mi sección",
-							},
-							{
-								value: false,
-								title: "No — Soy docente de área",
-								desc: "Imparto una materia específica",
-							},
-						].map((opt) => (
-							<button
-								type="button"
-								key={String(opt.value)}
-								onClick={() => form.setValue("isHomeroomTeacher", opt.value)}
-								className={`rounded-lg border-[1.5px] p-3 text-left ${
-									values.isHomeroomTeacher === opt.value
-										? "border-[#003087] bg-[#eef3fb]"
-										: "border-[#E0E0E0]"
-								}`}
-							>
-								<div className="text-[13px] font-bold text-[#1a1a1a]">{opt.title}</div>
-								<div className="mt-0.5 text-[11px] font-medium text-[#6b6b6b]">{opt.desc}</div>
-							</button>
-						))}
-					</div>
+					{[
+						{
+							value: true,
+							title: "Sí — Soy docente encargado",
+							desc: "Imparto las materias troncales de mi sección (Lengua Española, Matemáticas, Ciencias Sociales, Ciencias Naturales).",
+						},
+						{
+							value: false,
+							title: "No — Soy docente de área",
+							desc: "Imparto una materia específica.",
+						},
+					].map((opt) => (
+						<button
+							type="button"
+							key={String(opt.value)}
+							onClick={() => {
+								form.setValue("isHomeroomTeacher", opt.value);
+								form.setValue("subjectId", undefined);
+							}}
+							className={`flex items-start gap-2.5 rounded-lg border-[1.5px] p-2.5 text-left ${values.isHomeroomTeacher === opt.value ? "border-[#003087] bg-white" : "border-transparent"}`}
+						>
+							<div
+								className={`mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 ${values.isHomeroomTeacher === opt.value ? "border-[#003087] bg-[#003087]" : "border-[#c4c7cc]"}`}
+							/>
+							<div>
+								<div className="text-[13.5px] font-bold text-[#1a1d21]">{opt.title}</div>
+								<div className="mt-0.5 text-xs text-[#5b5f66]">{opt.desc}</div>
+							</div>
+						</button>
+					))}
 				</div>
 			)}
 
-			{!values.isHomeroomTeacher && (
-				<StatusBanner variant="warning">
-					Selección de materia próximamente — el catálogo de materias aún no está disponible.
-				</StatusBanner>
+			{showMateriaSelect && (
+				<label className="flex flex-col gap-1.5">
+					<span className="text-xs font-bold text-[#1a1d21]">¿Qué materia impartes?</span>
+					<select
+						value={values.subjectId ?? ""}
+						onChange={(e) => form.setValue("subjectId", e.target.value || undefined)}
+						className={FIELD_CLASS}
+					>
+						<option value="">Selecciona una materia</option>
+						{filteredSubjects.map((s) => (
+							<option key={s.id} value={s.id}>
+								{s.name}
+							</option>
+						))}
+					</select>
+				</label>
 			)}
 
-			<Button type="button" className="w-full bg-[#003087] hover:bg-[#002468]" onClick={onContinue}>
+			<button
+				type="button"
+				disabled={!canContinue}
+				onClick={onContinue}
+				className="mt-1.5 rounded-lg bg-[#003087] py-3 text-[14.5px] font-bold text-white disabled:bg-[#a8b5d6]"
+			>
 				Continuar
-			</Button>
-
-			<p className="text-center text-xs font-medium text-[#8a8a8a]">
-				¿Ya tienes cuenta?{" "}
-				<Link to="/login" className="font-semibold text-[#003087]">
-					Inicia sesión
-				</Link>
-			</p>
+			</button>
 		</div>
 	);
 }

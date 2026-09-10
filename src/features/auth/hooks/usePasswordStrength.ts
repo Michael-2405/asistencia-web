@@ -1,12 +1,16 @@
 export function usePasswordStrength(password: string) {
-	const length = password.length;
-	let strength = 0;
-	if (length >= 8) strength++;
-	if (/[A-Z]/.test(password)) strength++;
-	if (/[0-9]/.test(password) && /[a-z]/.test(password)) strength++;
+	let score = 0;
+	if (password.length >= 8) score++;
+	if (/[A-Z]/.test(password) && /[0-9]/.test(password)) score++;
+	if (password.length >= 12 && /[^A-Za-z0-9]/.test(password)) score++;
 
-	const label = length === 0 ? "" : strength <= 1 ? "Débil" : strength === 2 ? "Media" : "Fuerte";
-	const color = strength <= 1 ? "#C62828" : strength === 2 ? "#E65100" : "#2E7D32";
+	const labels = ["", "Débil", "Media", "Fuerte"];
+	const colors = ["#E0E0E0", "#C62828", "#F9A825", "#2E7D32"];
 
-	return { strength, label, color, hasValue: length > 0 };
+	return {
+		strength: score,
+		label: labels[score],
+		color: colors[score] || colors[0],
+		hasValue: password.length > 0,
+	};
 }

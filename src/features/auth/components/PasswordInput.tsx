@@ -1,10 +1,11 @@
 import { forwardRef, type InputHTMLAttributes, useState } from "react";
-import { FIELD_CLASS } from "../constants";
 
-type PasswordInputProps = InputHTMLAttributes<HTMLInputElement>;
+interface PasswordInputProps extends InputHTMLAttributes<HTMLInputElement> {
+	borderClassName?: string;
+}
 
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
-	function PasswordInput({ className, ...props }, ref) {
+	function PasswordInput({ className, borderClassName = "border-[#d5d8dc]", ...props }, ref) {
 		const [visible, setVisible] = useState(false);
 
 		return (
@@ -12,13 +13,13 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
 				<input
 					ref={ref}
 					type={visible ? "text" : "password"}
-					className={`${FIELD_CLASS} pr-11 ${className ?? ""}`}
+					className={`w-full rounded-lg border-[1.5px] ${borderClassName} px-3.5 py-2.5 pr-12 text-sm outline-none focus:border-[#003087] ${className ?? ""}`}
 					{...props}
 				/>
 				<button
 					type="button"
 					onClick={() => setVisible((v) => !v)}
-					className="absolute inset-y-1 right-1 w-9 text-[11px] font-medium text-[#6b6b6b]"
+					className="absolute inset-y-0 right-1 px-2.5 text-[12.5px] font-semibold text-[#8a8f98]"
 				>
 					{visible ? "Ocultar" : "Mostrar"}
 				</button>

@@ -1,4 +1,5 @@
 import { Button } from "@/shared/ui/button";
+import { usePasswordStrength } from "../hooks/usePasswordStrength";
 import { PasswordInput } from "./PasswordInput";
 import { allRequirementsMet, PasswordRequirementsList } from "./PasswordRequirementsList";
 import { StatusBanner } from "./StatusBanner";
@@ -22,37 +23,43 @@ export function ResetPasswordForm({
 	error,
 	submitting,
 }: ResetPasswordFormProps) {
+	const { strength, color } = usePasswordStrength(newPassword);
 	const canSubmit =
 		allRequirementsMet(newPassword) &&
 		newPassword === confirmNewPassword &&
 		confirmNewPassword.length > 0;
 
 	return (
-		<div>
-			<h2 className="text-[22px] font-bold text-[#1a1a1a]">Nueva contraseña</h2>
-			<p className="mt-1.5 text-[13px] font-medium text-[#6b6b6b]">
-				Crea una nueva contraseña para tu cuenta.
-			</p>
+		<div className="flex flex-col gap-4">
+			<div>
+				<h2 className="mb-1.5 text-[22px] font-extrabold text-[#1a1d21]">Nueva contraseña</h2>
+				<p className="text-[13.5px] text-[#5b5f66]">Elige una contraseña nueva para tu cuenta.</p>
+			</div>
 
-			{error && (
-				<div className="mt-4">
-					<StatusBanner variant="error">{error}</StatusBanner>
-				</div>
-			)}
+			{error && <StatusBanner variant="error">{error}</StatusBanner>}
 
-			<label htmlFor="reset-new-password" className="mt-5 flex flex-col gap-1.5">
-				<span className="text-xs font-semibold text-[#333]">Nueva contraseña</span>
+			<label htmlFor="reset-new-password" className="flex flex-col gap-1.5">
+				<span className="text-xs font-bold text-[#1a1d21]">Nueva contraseña</span>
 				<PasswordInput
 					id="reset-new-password"
 					value={newPassword}
 					onChange={(e) => onNewPasswordChange(e.target.value)}
 				/>
+				{newPassword.length > 0 && (
+					<div className="mt-1 flex gap-1">
+						{[0, 1, 2].map((i) => (
+							<div
+								key={i}
+								className="h-1 flex-1 rounded-full"
+								style={{ background: i < strength ? color : "#E0E0E0" }}
+							/>
+						))}
+					</div>
+				)}
 			</label>
 
-			<PasswordRequirementsList password={newPassword} />
-
-			<label htmlFor="reset-confirm-password" className="mt-3.5 flex flex-col gap-1.5">
-				<span className="text-xs font-semibold text-[#333]">Confirmar nueva contraseña</span>
+			<label htmlFor="reset-confirm-password" className="flex flex-col gap-1.5">
+				<span className="text-xs font-bold text-[#1a1d21]">Confirmar nueva contraseña</span>
 				<PasswordInput
 					id="reset-confirm-password"
 					value={confirmNewPassword}
@@ -60,10 +67,12 @@ export function ResetPasswordForm({
 				/>
 			</label>
 
+			<PasswordRequirementsList password={newPassword} />
+
 			<Button
-				className="mt-4.5 w-full bg-[#003087] hover:bg-[#002468]"
 				onClick={onSubmit}
 				disabled={!canSubmit || submitting}
+				className="bg-[#003087] hover:bg-[#002468]"
 			>
 				{submitting ? "Restableciendo…" : "Restablecer contraseña"}
 			</Button>

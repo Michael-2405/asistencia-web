@@ -50,13 +50,13 @@ export function ResetPasswordPage() {
 
 	return (
 		<AuthLayout
-			tagline="Crea una nueva contraseña"
-			footerNote="Cuaderno Digital — organiza tu aula en un solo lugar."
+			title="Recupera el acceso a tu cuenta"
+			subtitle="Te ayudamos a restablecer tu contraseña de forma segura."
 		>
 			{done ? (
 				<AuthSuccessScreen
-					title="Contraseña actualizada"
-					description="Ya puedes iniciar sesión con tu nueva contraseña."
+					title="Contraseña restablecida"
+					description="Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión."
 					buttonLabel="Ir al inicio de sesión"
 					onButtonClick={() => navigate("/login")}
 				/>
