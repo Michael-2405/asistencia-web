@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { UseFormReturn } from "react-hook-form";
-import { fetchSubjects } from "@/features/courses/api";
+import { fetchSubjects } from "@/features/academic/api";
 import { FIELD_CLASS } from "../../constants";
 import type { RegisterTeacherFormValues } from "../../schemas/register-teacher.schema";
 import { PasswordInput } from "../shared/PasswordInput";

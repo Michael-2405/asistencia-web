@@ -34,7 +34,7 @@ export function LoginPage() {
 		}
 
 		logger.info("Login exitoso");
-		navigate("/courses");
+		navigate("/dashboard");
 	}
 
 	async function handleTwoFactorSubmit(code: string, useBackupCode: boolean) {
@@ -65,7 +65,7 @@ export function LoginPage() {
 		}
 
 		logger.info("Verificación 2FA exitosa");
-		navigate("/courses");
+		navigate("/dashboard");
 	}
 
 	return (

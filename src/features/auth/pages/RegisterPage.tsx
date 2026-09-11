@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { fetchSubjects } from "@/features/courses/api";
+import { fetchSubjects } from "@/features/academic/api";
 import { ApiError } from "@/shared/lib/http";
 import { createLogger } from "@/shared/lib/logger";
 import { registerTeacher } from "../api";

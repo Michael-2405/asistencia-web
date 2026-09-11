@@ -1,4 +1,4 @@
-import { LayoutDashboard, LogOut, User } from "lucide-react";
+import { BookOpen, Home, LogOut, User } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,7 +14,8 @@ import { createLogger } from "@/shared/lib/logger";
 const logger = createLogger("AppLayout");
 
 const NAV_ITEMS = [
-	{ to: "/courses", label: "Mis Cursos", icon: LayoutDashboard },
+	{ to: "/dashboard", label: "Inicio", icon: Home },
+	{ to: "/courses", label: "Mis Cursos", icon: BookOpen },
 	{ to: "/profile", label: "Mi Perfil", icon: User },
 ];
 

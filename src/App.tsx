@@ -35,7 +35,7 @@ const CoursesListPage = lazy(() =>
 	import("@/features/courses/pages/CoursesListPage").then((m) => ({ default: m.CoursesListPage })),
 );
 const StudentsListPage = lazy(() =>
-	import("@/features/courses/pages/StudentsListPage").then((m) => ({
+	import("@/features/students/pages/StudentsListPage").then((m) => ({
 		default: m.StudentsListPage,
 	})),
 );
@@ -43,6 +43,10 @@ const CourseAttendancePage = lazy(() =>
 	import("@/features/attendance/pages/CourseAttendancePage").then((m) => ({
 		default: m.CourseAttendancePage,
 	})),
+);
+
+const DashboardPage = lazy(() =>
+	import("@/features/dashboard/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
 );
 
 function App() {
@@ -73,13 +77,12 @@ function App() {
 								</RequireAuth>
 							}
 						>
+							<Route path="/dashboard" element={<DashboardPage />} />
 							<Route path="/profile" element={<ProfilePage />} />
 							<Route path="/courses" element={<CoursesListPage />} />
 							<Route path="/courses/:courseId/students" element={<StudentsListPage />} />
 							<Route path="/courses/:courseId/attendance" element={<CourseAttendancePage />} />
 						</Route>
-
-						<Route path="/dashboard" element={<Navigate to="/courses" replace />} />
 					</Routes>
 				</Suspense>
 			</BrowserRouter>

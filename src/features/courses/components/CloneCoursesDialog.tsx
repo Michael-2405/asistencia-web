@@ -2,7 +2,8 @@ import { useState } from "react";
 import { StatusBanner } from "@/features/auth/components/shared/StatusBanner";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { useCloneCourses, useCourses, useSchoolYears } from "../hooks";
+import { useSchoolYears } from "../../academic/hooks";
+import { useCloneCourses, useCourses } from "../hooks";
 
 interface CloneCoursesDialogProps {
 	open: boolean;
@@ -42,6 +43,18 @@ export function CloneCoursesDialog({
 			else next.add(id);
 			return next;
 		});
+	}
+
+	const selectableCourses = (sourceCourses ?? []).filter((c) => !exists(c));
+	const allSelected =
+		selectableCourses.length > 0 && selectableCourses.every((c) => checked.has(c.id));
+
+	function toggleAll() {
+		if (allSelected) {
+			setChecked(new Set());
+		} else {
+			setChecked(new Set(selectableCourses.map((c) => c.id)));
+		}
 	}
 
 	async function onConfirm() {
@@ -118,31 +131,48 @@ export function CloneCoursesDialog({
 							Los estudiantes no se copian — deberás agregarlos manualmente.
 						</p>
 
-						<div className="flex max-h-70 flex-col gap-2 overflow-y-auto">
+						<button
+							type="button"
+							onClick={toggleAll}
+							className="self-start text-[12.5px] font-bold text-[#003087]"
+						>
+							{allSelected ? "Deseleccionar todos" : "Seleccionar todos"}
+						</button>
+
+						<div className="flex max-h-70 flex-col overflow-y-auto rounded-[9px] border border-[#E0E0E0]">
 							{(sourceCourses ?? []).map((c) => {
 								const alreadyExists = exists(c);
+								const isChecked = checked.has(c.id);
 								return (
-									<label
+									<div
 										key={c.id}
-										className={`flex items-center gap-3 rounded-lg border border-[#E0E0E0] p-3 ${
-											alreadyExists ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-										}`}
+										className="flex items-center gap-2.5 border-b border-[#F0F0F0] px-3.5 py-2.5 last:border-b-0"
 									>
-										<input
-											type="checkbox"
-											checked={checked.has(c.id)}
+										<button
+											type="button"
 											disabled={alreadyExists}
-											onChange={() => toggle(c.id)}
-										/>
-										<span className="flex-1 text-[13px] font-semibold text-[#1a1a1a]">
+											onClick={() => toggle(c.id)}
+											className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded text-[11px] text-white ${
+												alreadyExists
+													? "border-[1.5px] border-[#E0E0E0] bg-[#F5F5F5]"
+													: isChecked
+														? "border-[1.5px] border-[#003087] bg-[#003087]"
+														: "border-[1.5px] border-[#d5d8dc] bg-white"
+											}`}
+										>
+											{(alreadyExists || isChecked) && "✓"}
+										</button>
+										<span
+											className={`flex-1 text-[13px] font-semibold ${alreadyExists ? "text-[#a8adb5]" : "text-[#1a1a1a]"}`}
+										>
 											{c.grade} {c.section} {c.subjectName ? `— ${c.subjectName}` : ""}
 										</span>
 										{alreadyExists && (
-											<span className="rounded-md bg-[#F0F0F0] px-2 py-0.5 text-[10px] font-bold text-[#6b6b6b]">
+											<span className="rounded-md bg-[#F5F5F5] px-2 py-0.5 text-[10.5px] font-bold text-[#8a8f98]">
 												Ya existe
 											</span>
 										)}
-									</label>
+									</div>
 								);
 							})}
 						</div>
