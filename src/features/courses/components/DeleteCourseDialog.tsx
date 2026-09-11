@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StatusBanner } from "@/features/auth/components/StatusBanner";
+import { StatusBanner } from "@/features/auth/components/shared/StatusBanner";
 import { ApiError } from "@/shared/lib/http";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
@@ -31,7 +31,7 @@ export function DeleteCourseDialog({ open, onOpenChange, course }: DeleteCourseD
 			<DialogContent className="max-w-105">
 				<DialogHeader>
 					<DialogTitle>
-						Eliminar {course.grade} Grado — Sección {course.section}
+						Desactivar {course.grade} Grado — Sección {course.section}
 					</DialogTitle>
 				</DialogHeader>
 
@@ -61,7 +61,7 @@ export function DeleteCourseDialog({ open, onOpenChange, course }: DeleteCourseD
 						disabled={deleteMutation.isPending}
 						onClick={onConfirm}
 					>
-						Eliminar curso
+						Desactivar curso
 					</Button>
 				</div>
 			</DialogContent>

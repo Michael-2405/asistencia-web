@@ -12,6 +12,7 @@ function log(level: LogLevel, scope: string, message: string, data?: unknown): v
 
 	const timestamp = new Date().toISOString().split("T")[1]?.replace("Z", "");
 	const prefix = `%c[${timestamp}] [${scope}]`;
+
 	const consoleMethod = {
 		debug: console.debug,
 		info: console.info,
@@ -19,11 +20,8 @@ function log(level: LogLevel, scope: string, message: string, data?: unknown): v
 		error: console.error,
 	}[level];
 
-	if (data === undefined) {
-		consoleMethod(prefix, LEVEL_STYLES[level], message);
-	} else {
-		consoleMethod(prefix, LEVEL_STYLES[level], message, data);
-	}
+	if (data === undefined) consoleMethod(prefix, LEVEL_STYLES[level], message);
+	else consoleMethod(prefix, LEVEL_STYLES[level], message, data);
 }
 
 export function createLogger(scope: string) {

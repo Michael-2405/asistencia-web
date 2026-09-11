@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ApiError } from "@/shared/lib/http";
 import { Button } from "@/shared/ui/button";
-import { StatusBanner } from "../components/StatusBanner";
-import { useMyProfile, useReactivateAccount } from "../hooks";
+import { StatusBanner } from "../components/shared/StatusBanner";
+import { useMyProfile, useReactivateAccount } from "../hooks/useProfile";
 
 export function AccountSuspendedPage() {
 	const { data: profile, isLoading } = useMyProfile();

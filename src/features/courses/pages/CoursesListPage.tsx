@@ -1,29 +1,32 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/ui/button";
+import { useSchoolYears } from "../../academic/hooks";
 import { CloneCoursesDialog } from "../components/CloneCoursesDialog";
-import { CourseCard } from "../components/CourseCard";
-import { CourseFormSheet } from "../components/CourseFormSheet";
+import { CourseFormDialog } from "../components/CourseFormDialog";
+import { CourseCard } from "../components/course-list/CourseCard";
+import { CourseListEmptyState } from "../components/course-list/CourseListEmptyState";
 import { DeleteCourseDialog } from "../components/DeleteCourseDialog";
-import { useCourses, useSchoolYears } from "../hooks";
+import { useCourses, useTodayAttendanceStatus } from "../hooks";
 import type { Course } from "../types";
 
 export function CoursesListPage() {
-	const navigate = useNavigate();
 	const { data: schoolYears } = useSchoolYears();
 	const [selectedYearId, setSelectedYearId] = useState<string>("");
 	const { data: courses } = useCourses(selectedYearId);
-	const [deletingCourse, setDeletingCourse] = useState<Course | undefined>(undefined);
+	const { data: attendanceStatus } = useTodayAttendanceStatus();
 
 	const [formOpen, setFormOpen] = useState(false);
 	const [editingCourse, setEditingCourse] = useState<Course | undefined>(undefined);
 	const [cloneOpen, setCloneOpen] = useState(false);
+	const [deactivatingCourse, setDeactivatingCourse] = useState<Course | undefined>(undefined);
 
 	useEffect(() => {
 		if (schoolYears && schoolYears.length > 0 && !selectedYearId) {
 			setSelectedYearId(schoolYears[0].id);
 		}
 	}, [schoolYears, selectedYearId]);
+
+	const statusByCourseId = new Map((attendanceStatus ?? []).map((s) => [s.courseId, s.submitted]));
 
 	function openCreate() {
 		setEditingCourse(undefined);
@@ -36,26 +39,23 @@ export function CoursesListPage() {
 	}
 
 	return (
-		<div>
-			<div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#E0E0E0] bg-white px-8 py-5.5">
+		<div className="mx-auto flex max-w-295 flex-col gap-5.5 p-8">
+			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div>
-					<div className="text-xl font-bold text-[#1a1a1a]">Mis Cursos</div>
-					<div className="mt-2 flex items-center gap-2">
-						<span className="text-[13px] font-medium text-[#6b6b6b]">Año escolar:</span>
-						<select
-							value={selectedYearId}
-							onChange={(e) => setSelectedYearId(e.target.value)}
-							className="rounded-lg border-[1.5px] border-[#E0E0E0] px-2.5 py-1.5 text-xs font-semibold text-[#1a1a1a]"
-						>
-							{(schoolYears ?? []).map((y) => (
-								<option key={y.id} value={y.id}>
-									{y.name}
-								</option>
-							))}
-						</select>
-					</div>
+					<h1 className="mb-1 text-2xl font-extrabold text-[#1a1d21]">Mis Cursos</h1>
+					<select
+						value={selectedYearId}
+						onChange={(e) => setSelectedYearId(e.target.value)}
+						className="rounded-[7px] border border-[#d5d8dc] bg-white px-2.5 py-1.5 text-[13px] font-semibold text-[#5b5f66]"
+					>
+						{(schoolYears ?? []).map((y) => (
+							<option key={y.id} value={y.id}>
+								Año Escolar {y.name}
+							</option>
+						))}
+					</select>
 				</div>
-				<div className="flex gap-2.5">
+				<div className="flex flex-wrap gap-2.5">
 					<Button
 						variant="outline"
 						className="border-[1.5px] border-[#003087] text-[#003087]"
@@ -69,37 +69,24 @@ export function CoursesListPage() {
 				</div>
 			</div>
 
-			<div className="px-8 py-7">
-				{courses && courses.length > 0 ? (
-					<div className="grid max-w-245 grid-cols-1 gap-4.5 sm:grid-cols-2">
-						{courses.map((c) => (
-							<CourseCard
-								key={c.id}
-								course={c}
-								onEdit={() => openEdit(c)}
-								onDelete={() => setDeletingCourse(c)}
-								onViewStudents={() => navigate(`/courses/${c.id}/students`)}
-								onTakeAttendance={() => navigate(`/courses/${c.id}/attendance`)}
-							/>
-						))}
-					</div>
-				) : (
-					<div className="py-20 text-center">
-						<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#eef3fb] text-2xl">
-							📚
-						</div>
-						<div className="mt-4.5 text-[17px] font-bold text-[#1a1a1a]">
-							Aún no tienes cursos para este año escolar
-						</div>
-						<Button className="mt-4.5 bg-[#003087] hover:bg-[#002468]" onClick={openCreate}>
-							+ Crear tu primer curso
-						</Button>
-					</div>
-				)}
-			</div>
+			{courses && courses.length > 0 ? (
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+					{courses.map((c) => (
+						<CourseCard
+							key={c.id}
+							course={c}
+							attendanceSubmitted={statusByCourseId.get(c.id) ?? null}
+							onEdit={() => openEdit(c)}
+							onDeactivate={() => setDeactivatingCourse(c)}
+						/>
+					))}
+				</div>
+			) : (
+				<CourseListEmptyState onCreateFirst={openCreate} />
+			)}
 
 			{selectedYearId && (
-				<CourseFormSheet
+				<CourseFormDialog
 					open={formOpen}
 					onOpenChange={setFormOpen}
 					schoolYearId={selectedYearId}
@@ -113,11 +100,11 @@ export function CoursesListPage() {
 					currentSchoolYearId={selectedYearId}
 				/>
 			)}
-			{deletingCourse && (
+			{deactivatingCourse && (
 				<DeleteCourseDialog
-					open={Boolean(deletingCourse)}
-					onOpenChange={(v) => !v && setDeletingCourse(undefined)}
-					course={deletingCourse}
+					open={Boolean(deactivatingCourse)}
+					onOpenChange={(v) => !v && setDeactivatingCourse(undefined)}
+					course={deactivatingCourse}
 				/>
 			)}
 		</div>
