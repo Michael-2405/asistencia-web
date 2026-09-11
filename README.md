@@ -58,17 +58,28 @@ npm run dev
 
 ## Estructura del proyecto
 
-El código sigue una organización por **vertical slicing**: cada carpeta bajo `features/` agrupa todo lo necesario para una capacidad de negocio (API, tipos, hooks, componentes), en vez de separar por tipo técnico.
+El código sigue una organización por **vertical slicing**: cada carpeta bajo `features/` agrupa todo lo necesario para una capacidad de negocio (API, tipos, hooks, componentes), separada por el recurso real que gestiona.
 
 ```
 src/
 features/
-auth/ # Registro, login, 2FA, recuperación de contraseña, perfil
-courses/ # Cursos y estudiantes
-attendance/ # Registro de asistencia
+auth/ # Registro, login, 2FA, recuperación de contraseña, perfil, suspensión
+academic/ # Catálogos compartidos: materias, años escolares
+courses/ # Solo cursos (crear, editar, clonar, desactivar)
+students/ # Solo estudiantes (agregar, editar, retirar)
+attendance/ # Grilla de asistencia por curso
+dashboard/ # Pantalla de inicio (resumen de cursos y asistencia del día)
+errors/ # Pantallas de error (401, 403, 404, 500, 503, offline)
 shared/
-ui/ # Componentes de shadcn/ui
+ui/ # Componentes de shadcn/ui — nunca editados a mano
+layouts/ # AppLayout (header + navegación persistente)
+components/ # ErrorBoundary
 lib/ # HTTP client, logger
+hooks/ # useCountdown, useOnlineStatus, etc.
+```
+
+```
+Cada feature de recurso (auth, courses, students, etc.) sigue el mismo patrón interno: `types.ts` → `api.ts` → `hooks.ts` → `components/` → `pages/`. Dentro de `components/`, se subdivide por flujo/página consumidora cuando hay suficientes archivos relacionados (ver `auth/components/{login,register,profile}/`).
 ```
 
 Cada feature sigue el mismo patrón interno: `types.ts` → `api.ts` → `hooks.ts` (TanStack Query) → `components/` → `pages/`.
