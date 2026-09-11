@@ -2,8 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as api from "./api";
 import type { CourseInput } from "./types";
 
-export function useCourse(courseId: string, schoolYearId?: string) {
-	const { data: courses } = useCourses(schoolYearId);
+// export function useCourse(courseId: string, schoolYearId?: string) {
+// 	const { data: courses } = useCourses(schoolYearId);
+// 	return courses?.find((c) => c.id === courseId);
+// }
+
+export function useCourse(courseId: string) {
+	const { data: courses } = useAllCourses();
 	return courses?.find((c) => c.id === courseId);
 }
 

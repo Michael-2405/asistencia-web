@@ -1,12 +1,11 @@
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from "react";
 import { useCourse } from "@/features/courses/hooks";
-import { Button } from "@/shared/ui/button";
 import { useMonthlyAttendance, useSaveDailyAttendance } from "../hooks";
 import type { AttendanceStatusCode } from "../types";
 import { getTodayIso } from "../utils";
 import { buildAttendanceColumns } from "./AttendanceGrid.columns";
-import { AttendanceHeader } from "./AttendanceHeader";
+import { AttendanceInfoCard } from "./AttendanceInfoCard";
 import { MarkNonInstructionalDayDialog } from "./MarkNonInstructionalDayDialog";
 
 interface AttendanceGridProps {
@@ -58,6 +57,17 @@ export function AttendanceGrid({
 
 	const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel() });
 
+	const activeRows = rows.filter((r) => r.active);
+	const footerTotals = { P: 0, T: 0, A: 0, E: 0 };
+	activeRows.forEach((r) => {
+		for (const v of Object.values(r.statusByDate)) {
+			if (v in footerTotals) footerTotals[v as keyof typeof footerTotals]++;
+		}
+	});
+	const dailyPresentCounts = calendarDays.map((d) =>
+		d.nonInstructional ? null : activeRows.filter((r) => r.statusByDate[d.date] === "P").length,
+	);
+
 	async function handleSave() {
 		const eligibleStudents = rows.filter(
 			(r) => r.active || !r.withdrawalDate || r.withdrawalDate > todayIso,
@@ -70,103 +80,117 @@ export function AttendanceGrid({
 	}
 
 	const courseLabel = course
-		? `${course.grade} Grado — Sección ${course.section}${course.isHomeroom ? "" : ` · ${course.subjectName ?? ""}`}`
+		? `${course.grade} ${course.section} — ${course.educationLevel === "PRIMARY" ? "Primaria" : "Secundaria"}`
 		: "Cargando…";
+
+	const studentCountLabel = course
+		? `${course.isHomeroom ? "Sección única" : (course.subjectName ?? "Sin materia")} · ${course.activeStudentCount} estudiantes`
+		: "";
+
 	const workingDaysCount = calendarDays.filter((d) => !d.nonInstructional).length;
 
 	if (isLoading) return <p className="p-6 text-muted-foreground">Cargando…</p>;
 
 	return (
-		<div>
-			<AttendanceHeader
+		<div className="flex flex-col gap-4 p-8">
+			<AttendanceInfoCard
 				courseLabel={courseLabel}
+				studentCountLabel={studentCountLabel}
 				workingDaysCount={workingDaysCount}
+				totalDaysCount={calendarDays.length}
 				monthOptions={monthOptions}
-				onMonthChange={onMonthChange}
 				selectedYear={year}
 				selectedMonth={month}
+				onMonthChange={onMonthChange}
+				isTodaySubmitted={isTodaySubmitted}
+				canSave={isTodayEditable}
+				saving={saveMutation.isPending}
+				onSave={handleSave}
+				onMarkNonInstructionalDay={() => setMarkDayOpen(true)}
 			/>
 
-			<div className="flex items-center justify-between border-b border-[#E0E0E0] bg-white px-6 py-4">
-				<div className="flex items-center gap-3">
-					{isTodayEditable && !isTodaySubmitted && (
-						<Button
-							onClick={handleSave}
-							disabled={saveMutation.isPending}
-							className="bg-[#003087] hover:bg-[#002468]"
-						>
-							{saveMutation.isPending ? "Guardando…" : "Guardar"}
-						</Button>
-					)}
-					{isTodayEditable && isTodaySubmitted && (
-						<span className="text-xs font-medium text-[#6b6b6b]">
-							La asistencia de hoy ya fue registrada.
-						</span>
-					)}
-				</div>
-				<Button
-					variant="outline"
-					className="border-[1.5px] border-[#003087] text-[#003087]"
-					onClick={() => setMarkDayOpen(true)}
-				>
-					Marcar día no laborable
-				</Button>
-			</div>
-
-			<div className="overflow-x-auto p-6">
-				<table className="w-full border-separate border-spacing-1 text-sm">
-					<thead>
-						{table.getHeaderGroups().map((hg) => (
-							<tr key={hg.id}>
-								{hg.headers.map((h) => (
-									<th
-										key={h.id}
-										style={{ width: h.getSize() }}
-										className="px-1 py-1 text-center font-medium"
-									>
-										{flexRender(h.column.columnDef.header, h.getContext())}
-									</th>
-								))}
-							</tr>
-						))}
-					</thead>
-					<tbody>
-						{table.getRowModel().rows.map((row) => (
-							<tr key={row.id}>
-								{row.getVisibleCells().map((cell) => (
+			<div className="overflow-hidden rounded-[10px] border border-[#E0E0E0] bg-white">
+				<div className="max-h-160 overflow-auto">
+					<table className="w-full min-w-max border-separate border-spacing-0 text-[12.5px]">
+						<thead>
+							{table.getHeaderGroups().map((hg) => (
+								<tr key={hg.id}>
+									{hg.headers.map((h, i) => (
+										<th
+											key={h.id}
+											style={{ width: h.getSize() }}
+											className={`sticky top-0 z-20 bg-[#003087] px-1.5 py-2 text-center font-bold text-white ${i === 1 ? "sticky left-0 z-30 text-left" : ""}`}
+										>
+											{flexRender(h.column.columnDef.header, h.getContext())}
+										</th>
+									))}
+								</tr>
+							))}
+						</thead>
+						<tbody>
+							{table.getRowModel().rows.map((row, rowIndex) => (
+								<tr key={row.id} className={rowIndex % 2 === 1 ? "bg-[#FBFBFC]" : "bg-white"}>
+									{row.getVisibleCells().map((cell, i) => (
+										<td
+											key={cell.id}
+											style={{ width: cell.column.getSize() }}
+											className={`border-b border-r border-[#F0F0F0] px-1 py-1.5 text-center ${
+												i === 1
+													? "sticky left-0 z-10 whitespace-nowrap bg-inherit px-3.5 text-left"
+													: ""
+											}`}
+										>
+											{flexRender(cell.column.columnDef.cell, cell.getContext())}
+										</td>
+									))}
+								</tr>
+							))}
+						</tbody>
+						<tfoot>
+							<tr className="bg-[#EDEFF2] font-extrabold text-[#1a1d21]">
+								<td
+									colSpan={2}
+									className="sticky left-0 z-10 border-t-2 border-[#d5d8dc] bg-[#EDEFF2] px-3.5 py-2.5 text-left text-xs"
+								>
+									Total de la sección
+								</td>
+								{dailyPresentCounts.map((count, i) => (
 									<td
-										key={cell.id}
-										style={{ width: cell.column.getSize() }}
-										className={`rounded border border-[#E0E0E0] bg-white px-1 py-1.5 text-center ${
-											cell.column.id === "fullName" ? "whitespace-nowrap text-left" : ""
-										}`}
+										key={calendarDays[i]?.date ?? i}
+										className="border-t-2 border-[#d5d8dc] py-2.5 text-center text-[11.5px] text-[#5b5f66]"
 									>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
+										{count ?? "—"}
 									</td>
 								))}
+								<td className="border-t-2 border-l-2 border-[#d5d8dc] bg-[#dbe4f5] py-2.5 text-center text-[#003087]">
+									{footerTotals.P}
+								</td>
+								<td className="border-t-2 border-[#d5d8dc] bg-[#dbe4f5] py-2.5 text-center text-[#003087]">
+									{footerTotals.T}
+								</td>
+								<td className="border-t-2 border-[#d5d8dc] bg-[#dbe4f5] py-2.5 text-center text-[#003087]">
+									{footerTotals.A}
+								</td>
+								<td className="border-t-2 border-[#d5d8dc] bg-[#dbe4f5] py-2.5 text-center text-[#003087]">
+									{footerTotals.E}
+								</td>
+								<td className="border-t-2 border-[#d5d8dc] bg-[#dbe4f5]" />
 							</tr>
-						))}
-					</tbody>
-				</table>
+						</tfoot>
+					</table>
+				</div>
 			</div>
 
-			<div className="flex flex-wrap gap-4 px-6 pb-6 text-[11px] font-medium text-[#6b6b6b]">
-				<div>
-					<b className="text-[#2E7D32]">P</b> Presente
-				</div>
-				<div>
-					<b className="text-[#a06a00]">T</b> Tardanza
-				</div>
-				<div>
-					<b className="text-[#C62828]">A</b> Ausente
-				</div>
-				<div>
-					<b className="text-[#0277a8]">E</b> Excusa
-				</div>
-				<div className="flex items-center gap-1.5">
-					<span className="inline-block h-2 w-2 rounded-full bg-[#F9A825]" /> 2+ ausencias
-					consecutivas
-				</div>
+			<div className="flex flex-wrap items-center gap-4 px-1 text-xs text-[#5b5f66]">
+				<span className="font-bold text-[#1a1d21]">Leyenda:</span>
+				<LegendItem color="#E8F5E9" border="#2E7D32" label="Presente" />
+				<LegendItem color="#FFF8E1" border="#F9A825" label="Tardanza" />
+				<LegendItem color="#FDECEA" border="#C62828" label="Ausente" />
+				<LegendItem color="#E1F5FE" border="#0288D1" label="Excusa" />
+				<span className="flex items-center gap-1.5">
+					<span className="inline-block h-3.5 w-3.5 rounded border border-[#c9ccd1] bg-[repeating-linear-gradient(45deg,#e6e6e6,#e6e6e6_4px,#f2f2f2_4px,#f2f2f2_8px)]" />
+					Feriado / no laborable
+				</span>
 			</div>
 
 			<MarkNonInstructionalDayDialog
@@ -177,5 +201,17 @@ export function AttendanceGrid({
 				onOpenChange={setMarkDayOpen}
 			/>
 		</div>
+	);
+}
+
+function LegendItem({ color, border, label }: { color: string; border: string; label: string }) {
+	return (
+		<span className="flex items-center gap-1.5">
+			<span
+				className="inline-block h-3.5 w-3.5 rounded border"
+				style={{ backgroundColor: color, borderColor: border }}
+			/>
+			{label}
+		</span>
 	);
 }

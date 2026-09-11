@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import type { AttendanceStatusCode, CalendarDay, StudentAttendanceRow } from "../types";
 import { computeStudentStats, getDayStatus } from "../utils";
 import { StatusBadge } from "./StatusBadge";
-import { StatusSelector } from "./StatusSelector";
+import { TodayStatusPicker } from "./TodayStatusPicker";
 
 const columnHelper = createColumnHelper<StudentAttendanceRow>();
 
@@ -30,7 +30,7 @@ export function buildAttendanceColumns({
 
 		return columnHelper.display({
 			id: date,
-			size: status === "today" ? 84 : 42,
+			size: 44,
 			header: () => <DayHeader date={date} status={status} />,
 			cell: ({ row }) => {
 				const student = row.original;
@@ -42,10 +42,9 @@ export function buildAttendanceColumns({
 						<BlockedIcon icon={<UserX className="size-3.5" />} tooltip="Estudiante retirado" />
 					);
 				}
-
 				if (isEditableToday) {
 					return (
-						<StatusSelector
+						<TodayStatusPicker
 							value={edits[student.studentId] ?? "P"}
 							onChange={(s) => onStatusChange(student.studentId, s)}
 						/>
@@ -74,41 +73,38 @@ export function buildAttendanceColumns({
 		columnHelper.display({
 			id: "P",
 			size: 40,
-			header: () => <SummaryHeader label="P" bg="bg-[#166534]" />,
+			header: () => <SummaryHeader label="P" />,
 			cell: ({ row }) => computeStudentStats(row.original.statusByDate).present,
 		}),
 		columnHelper.display({
 			id: "T",
 			size: 40,
-			header: () => <SummaryHeader label="T" bg="bg-[#92400e]" />,
+			header: () => <SummaryHeader label="T" />,
 			cell: ({ row }) => computeStudentStats(row.original.statusByDate).late,
 		}),
 		columnHelper.display({
 			id: "A",
 			size: 40,
-			header: () => <SummaryHeader label="A" bg="bg-[#991b1b]" />,
+			header: () => <SummaryHeader label="A" />,
 			cell: ({ row }) => computeStudentStats(row.original.statusByDate).absent,
 		}),
 		columnHelper.display({
 			id: "E",
 			size: 40,
-			header: () => <SummaryHeader label="E" bg="bg-[#1e40af]" />,
+			header: () => <SummaryHeader label="E" />,
 			cell: ({ row }) => computeStudentStats(row.original.statusByDate).excused,
 		}),
 		columnHelper.display({
 			id: "pct",
-			size: 64,
-			header: () => <SummaryHeader label="% Asist." bg="bg-[#00123d]" />,
+			size: 60,
+			header: () => <SummaryHeader label="% Asist." />,
 			cell: ({ row }) => {
 				const stats = computeStudentStats(row.original.statusByDate);
-				const color =
-					stats.percentage < 80
-						? "text-[#C62828] bg-[#fdeeee]"
-						: stats.percentage < 90
-							? "text-[#a06a00] bg-[#fdf6e6]"
-							: "text-[#2E7D32] bg-[#eef6ee]";
+				const isRisk = stats.percentage < 80;
 				return (
-					<span className={`inline-block rounded px-1.5 py-0.5 text-xs font-extrabold ${color}`}>
+					<span
+						className={`inline-block rounded px-1.5 py-0.5 text-xs font-extrabold ${isRisk ? "bg-[#FDECEA] text-[#C62828]" : "text-[#1a1d21]"}`}
+					>
 						{stats.percentage}%
 					</span>
 				);
@@ -117,30 +113,38 @@ export function buildAttendanceColumns({
 	];
 
 	return [
-		columnHelper.accessor("rollNumber", { header: "Nº", size: 34 }),
+		columnHelper.accessor("rollNumber", { header: "Nº", size: 30 }),
 		columnHelper.accessor("fullName", {
 			header: "Estudiante",
-			size: 190,
+			size: 210,
 			cell: ({ row }) => {
 				const student = row.original;
 				const stats = computeStudentStats(student.statusByDate);
 				return (
-					<div className="flex items-center gap-2">
-						<span className={student.active ? "" : "text-[#9a9a9a] line-through"}>
+					<div className="flex flex-col gap-0.5">
+						<span
+							className={
+								student.active
+									? "font-semibold text-[#1a1d21]"
+									: "font-medium italic text-[#9a9ea5] line-through"
+							}
+						>
 							{student.fullName}
+							{!student.active && "  ·  INACTIVO"}
 						</span>
 						{student.active && stats.hasConsecutiveAbsenceAlert && (
 							<Tooltip>
 								<TooltipTrigger
-									render={<span className="inline-block h-2 w-2 rounded-full bg-[#F9A825]" />}
+									render={
+										<span className="inline-flex w-fit items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-bold text-[#B45309] bg-[#FFF1DE]">
+											2+ ausencias consecutivas
+										</span>
+									}
 								/>
-								<TooltipContent>2+ ausencias consecutivas</TooltipContent>
+								<TooltipContent>
+									Detectado en el cliente a partir del historial de asistencia
+								</TooltipContent>
 							</Tooltip>
-						)}
-						{!student.active && (
-							<span className="rounded bg-[#F0F0F0] px-1.5 py-0.5 text-[9px] font-bold text-[#8a8a8a]">
-								RETIRADO
-							</span>
 						)}
 					</div>
 				);
@@ -155,7 +159,7 @@ function BlockedIcon({ icon, tooltip }: { icon: ReactNode; tooltip: string }) {
 	return (
 		<Tooltip>
 			<TooltipTrigger
-				render={<span className="flex items-center justify-center text-[#b0b0b0]">{icon}</span>}
+				render={<span className="flex items-center justify-center text-[#c4c7cc]">{icon}</span>}
 			/>
 			<TooltipContent>{tooltip}</TooltipContent>
 		</Tooltip>
@@ -168,18 +172,24 @@ function DayHeader({ date, status }: { date: string; status: ReturnType<typeof g
 	const num = d.getDate();
 	const cls =
 		status === "today"
-			? "bg-[#0288D1] text-white"
+			? "bg-[#CE1126] text-white"
 			: status === "nonInstructional"
-				? "bg-[#94a3b8] text-white line-through"
-				: "bg-[#003087] text-white";
+				? "bg-[repeating-linear-gradient(45deg,#c7c9cc,#c7c9cc_4px,#dcdedf_4px,#dcdedf_8px)] text-[#6b6f76]"
+				: status === "future"
+					? "bg-[#EDEFF2] text-[#a8adb5]"
+					: "bg-[#1a3d8f] text-white";
 	return (
-		<div className={`rounded px-1 py-0.5 text-center ${cls}`}>
-			<div className="text-[9px] uppercase leading-none">{dow}</div>
-			<div className="text-[13px] font-bold leading-tight">{num}</div>
+		<div className={`flex flex-col items-center gap-px rounded px-1 py-1.5 ${cls}`}>
+			<span className="text-[9.5px] uppercase opacity-85">{dow}</span>
+			<span className="text-[13px] font-extrabold">{num}</span>
 		</div>
 	);
 }
 
-function SummaryHeader({ label, bg }: { label: string; bg: string }) {
-	return <div className={`rounded px-1 py-0.5 text-center text-white ${bg}`}>{label}</div>;
+function SummaryHeader({ label }: { label: string }) {
+	return (
+		<div className="rounded bg-[#E8EEF9] px-1 py-1.5 text-center text-[10px] font-extrabold text-[#003087]">
+			{label}
+		</div>
+	);
 }

@@ -36,7 +36,7 @@ async function parseResponse<T>(res: Response): Promise<T> {
 }
 
 export async function httpGet<T>(path: string): Promise<T> {
-	const res = await fetch(`${BASE_URL}${path}`, { credentials: "include" });
+	const res = await fetch(`${BASE_URL}${path}`, { credentials: "include", cache: "no-store" });
 	return parseResponse<T>(res);
 }
 
@@ -46,6 +46,7 @@ export async function httpPost<T>(path: string, body: unknown): Promise<T> {
 		headers: { "Content-Type": "application/json" },
 		credentials: "include",
 		body: JSON.stringify(body),
+		cache: "no-store",
 	});
 	return parseResponse<T>(res);
 }
@@ -56,11 +57,16 @@ export async function httpPatch<T>(path: string, body: unknown): Promise<T> {
 		headers: { "Content-Type": "application/json" },
 		credentials: "include",
 		body: JSON.stringify(body),
+		cache: "no-store",
 	});
 	return parseResponse<T>(res);
 }
 
 export async function httpDelete<T>(path: string): Promise<T> {
-	const res = await fetch(`${BASE_URL}${path}`, { method: "DELETE", credentials: "include" });
+	const res = await fetch(`${BASE_URL}${path}`, {
+		method: "DELETE",
+		credentials: "include",
+		cache: "no-store",
+	});
 	return parseResponse<T>(res);
 }
